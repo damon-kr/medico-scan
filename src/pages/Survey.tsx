@@ -5,20 +5,91 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { questions } from "@/data/questions";
 import { SurveyResponse } from "@/types/survey";
+import { RadioQuestion } from "@/components/survey/RadioQuestion";
+import { CheckboxQuestion } from "@/components/survey/CheckboxQuestion";
+import { RankingQuestion } from "@/components/survey/RankingQuestion";
+import { MultiSelectQuestion } from "@/components/survey/MultiSelectQuestion";
+import { useToast } from "@/hooks/use-toast";
 
 const Survey = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Partial<SurveyResponse>>({});
 
   const totalSteps = questions.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
+  const currentQuestion = questions[currentStep];
+
+  const validateCurrentQuestion = (): boolean => {
+    const currentValue = responses[currentQuestion.id];
+    
+    // Check if required
+    if (currentQuestion.validation?.required) {
+      if (!currentValue) {
+        toast({
+          title: "필수 항목입니다",
+          description: "질문에 답변해주세요.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Validate multi-select (subQuestions)
+      if (currentQuestion.type === "multi-select" && currentQuestion.subQuestions) {
+        const multiValue = currentValue as { [key: string]: any };
+        for (const subQ of currentQuestion.subQuestions) {
+          if (subQ.validation?.required && !multiValue[subQ.id]) {
+            toast({
+              title: "필수 항목입니다",
+              description: `"${subQ.title}"에 답변해주세요.`,
+              variant: "destructive",
+            });
+            return false;
+          }
+        }
+      }
+
+      // Validate checkbox min/max
+      if (currentQuestion.type === "checkbox") {
+        const checkboxValue = currentValue as string[];
+        if (currentQuestion.validation?.min && checkboxValue.length < currentQuestion.validation.min) {
+          toast({
+            title: "선택 개수 부족",
+            description: `최소 ${currentQuestion.validation.min}개를 선택해주세요.`,
+            variant: "destructive",
+          });
+          return false;
+        }
+      }
+
+      // Validate ranking
+      if (currentQuestion.type === "ranking") {
+        const rankingValue = currentValue as { selected: string[]; ranking: { [key: string]: number } };
+        if (!rankingValue.selected || rankingValue.selected.length === 0) {
+          toast({
+            title: "필수 항목입니다",
+            description: "최소 1개 이상 선택해주세요.",
+            variant: "destructive",
+          });
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
 
   const handleNext = () => {
+    if (!validateCurrentQuestion()) {
+      return;
+    }
+
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       // 설문 완료 - 결과 페이지로 이동
+      console.log("Survey responses:", responses);
       navigate("/results/temp-id");
     }
   };
@@ -29,7 +100,29 @@ const Survey = () => {
     }
   };
 
-  const currentQuestion = questions[currentStep];
+  const handleResponseChange = (questionId: string, value: any) => {
+    setResponses((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
+
+  const getQuestionTypeLabel = (type: string): string => {
+    switch (type) {
+      case "multi-select":
+        return "해당하는 항목을 전부 선택해 주세요";
+      case "checkbox":
+        return "해당하는 항목을 선택해 주세요";
+      case "radio":
+        return "해당하는 항목을 하나만 선택해 주세요";
+      case "ranking":
+        return "사용하는 채널을 선택하고 순위를 매겨주세요";
+      case "dropdown":
+        return "항목을 선택해 주세요";
+      default:
+        return "";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -74,28 +167,45 @@ const Survey = () => {
               )}
             </div>
 
-            {/* Question Content - Placeholder */}
+            {/* Question Type Hint */}
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground italic">
+                {getQuestionTypeLabel(currentQuestion.type)}
+              </p>
+            </div>
+
+            {/* Question Content */}
             <div className="space-y-4 mb-12">
-              <p className="text-muted-foreground">
-                질문 타입: {currentQuestion.type}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                (각 질문 타입별 컴포넌트를 다음 단계에서 구현합니다)
-              </p>
-              
-              {/* 옵션 표시 (임시) */}
-              {currentQuestion.options && (
-                <div className="space-y-2">
-                  {currentQuestion.options.map((option, index) => (
-                    <div 
-                      key={index}
-                      className="p-4 border border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors"
-                    >
-                      {option.emoji && <span className="mr-2">{option.emoji}</span>}
-                      {option.label}
-                    </div>
-                  ))}
-                </div>
+              {currentQuestion.type === "radio" && (
+                <RadioQuestion
+                  question={currentQuestion}
+                  value={responses[currentQuestion.id] as string}
+                  onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                />
+              )}
+
+              {currentQuestion.type === "checkbox" && (
+                <CheckboxQuestion
+                  question={currentQuestion}
+                  value={responses[currentQuestion.id] as string[]}
+                  onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                />
+              )}
+
+              {currentQuestion.type === "ranking" && (
+                <RankingQuestion
+                  question={currentQuestion}
+                  value={responses[currentQuestion.id] as { selected: string[]; ranking: { [key: string]: number } }}
+                  onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                />
+              )}
+
+              {currentQuestion.type === "multi-select" && (
+                <MultiSelectQuestion
+                  question={currentQuestion}
+                  value={responses[currentQuestion.id] as { [key: string]: any }}
+                  onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                />
               )}
             </div>
 
