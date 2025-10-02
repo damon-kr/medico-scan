@@ -143,11 +143,11 @@ export const questions: Question[] = [
     ],
   },
 
-  // Q4-3: 다른 채널 시도 경험
+  // Q4-4: 다른 채널 시도 경험
   {
     id: "new_channel_attempt",
     section: "channels",
-    order: 4.3,
+    order: 4.4,
     title: "새로운 마케팅 채널 시도에 대한 생각은?",
     type: "radio",
     validation: { required: true },
@@ -160,11 +160,11 @@ export const questions: Question[] = [
     ],
   },
 
-  // Q7: 마케팅 관리 주체
+  // Q4-5: 마케팅 관리 주체
   {
     id: "management",
     section: "operations",
-    order: 4.4,
+    order: 4.5,
     title: "마케팅 관리는 누가 하고 있나요?",
     type: "radio",
     validation: { required: true },
@@ -178,11 +178,11 @@ export const questions: Question[] = [
     ],
   },
 
-  // Q5: 채널별 비중
+  // Q4-3: 채널별 비중
   {
     id: "channel_ratio",
     section: "channels",
-    order: 5,
+    order: 4.3,
     title: "각 채널별 비중을 대략적으로 선택해주세요",
     type: "multi-select",
     validation: { required: true },
