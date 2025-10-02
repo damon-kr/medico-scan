@@ -57,21 +57,21 @@ CREATE TABLE surveys (
   -- Q4-2: 채널 선택 이유
   channel_reason TEXT NOT NULL,
   
-  -- Q4-3: 다른 채널 시도 경험
-  new_channel_attempt TEXT NOT NULL,
-  
-  -- Q5: 채널별 비중
+  -- Q4-3: 채널별 비중
   top1_ratio TEXT NOT NULL,
   online_ratio TEXT NOT NULL,
   
-  -- Q6: 콘텐츠 업데이트 주기
-  update_frequency TEXT NOT NULL,
+  -- Q4-4: 다른 채널 시도 경험
+  new_channel_attempt TEXT NOT NULL,
   
-  -- Q7: 마케팅 관리 주체
+  -- Q4-5: 마케팅 관리 주체
   management TEXT NOT NULL,
   
-  -- Q8: 신규 환자 파악 방법 (복수 선택)
+  -- Q5-1: 신규 환자 파악 방법 (복수 선택)
   tracking_methods TEXT[] NOT NULL,
+  
+  -- Q6: 콘텐츠 업데이트 주기
+  update_frequency TEXT NOT NULL,
   
   -- Q9: 온라인 현황 (복수 선택)
   online_status_positive TEXT[],
@@ -290,11 +290,11 @@ VALUES
 | 마케팅 채널 | Q4 | 사용 중인 마케팅 채널 + TOP 3 | checkbox + ranking | ✅ |
 | 마케팅 채널 | Q4-1 | 상업적 플랫폼 활용 (조건부) | radio | 조건부 |
 | 마케팅 채널 | Q4-2 | 채널 선택 이유 | radio | ✅ |
-| 마케팅 채널 | Q4-3 | 다른 채널 시도 경험 | radio | ✅ |
-| 마케팅 채널 | Q5 | 채널별 비중 | radio | ✅ |
+| 마케팅 채널 | Q4-3 | 채널별 비중 | multi-select | ✅ |
+| 마케팅 채널 | Q4-4 | 다른 채널 시도 경험 | radio | ✅ |
+| 운영 관리 | Q4-5 | 마케팅 관리 주체 | radio | ✅ |
+| 성과 측정 | Q5-1 | 신규 환자 파악 방법 | checkbox | ✅ |
 | 운영 관리 | Q6 | 콘텐츠 업데이트 주기 | radio | ✅ |
-| 운영 관리 | Q7 | 마케팅 관리 주체 | radio | ✅ |
-| 성과 측정 | Q8 | 신규 환자 파악 방법 | checkbox | ✅ |
 | 성과 측정 | Q9 | 온라인 현황 | checkbox | ✅ |
 | 개선 니즈 | Q10 | 가장 큰 문제 (최대 2개) | checkbox | ✅ |
 
@@ -479,11 +479,50 @@ VALUES
 
 ---
 
-### 3.8 Q4-3: 다른 채널 시도 경험
+### 3.8 Q4-3: 채널별 비중
 
 ```typescript
 {
   id: 'Q4-3',
+  section: '마케팅 채널 현황',
+  title: '각 채널별 비중을 대략적으로 선택해주세요',
+  type: 'multi-select',
+  subQuestions: [
+    {
+      id: 'top1_ratio',
+      title: '1순위 채널의 비중은?',
+      type: 'radio',
+      options: [
+        '⚫ 70% 이상 (거의 대부분)',
+        '⚫ 50-70% (절반 이상)',
+        '⚫ 30-50% (적당히)',
+        '⚫ 30% 미만 (일부)',
+      ],
+    },
+    {
+      id: 'online_ratio',
+      title: '온라인 vs 오프라인 비중은?',
+      type: 'radio',
+      options: [
+        '온라인 100% : 오프라인 0%',
+        '온라인 80% : 오프라인 20%',
+        '온라인 60% : 오프라인 40%',
+        '온라인 40% : 오프라인 60%',
+        '온라인 20% : 오프라인 80%',
+        '온라인 0% : 오프라인 100%',
+      ],
+    },
+  ],
+}
+```
+
+---
+
+### 3.9 Q4-4: 다른 채널 시도 경험
+
+```typescript
+{
+  id: 'Q4-4',
   section: '마케팅 채널 현황',
   title: '새로운 마케팅 채널 시도에 대한 생각은?',
   type: 'radio',
@@ -500,44 +539,52 @@ VALUES
 
 ---
 
-### 3.9 Q5: 채널별 비중
+### 3.10 Q4-5: 마케팅 관리 주체
 
 ```typescript
 {
-  id: 'Q5',
-  section: '마케팅 채널 현황',
-  title: '각 채널별 비중을 대략적으로 선택해주세요',
+  id: 'Q4-5',
+  section: '운영 관리',
+  title: '마케팅 관리는 누가 하고 있나요?',
   type: 'radio',
-  fields: [
-    {
-      name: 'top1_ratio',
-      label: 'Q4에서 선택한 1순위 채널의 비중은?',
-      options: [
-        '⚫ 70% 이상 (거의 대부분)',
-        '⚫ 50-70% (절반 이상)',
-        '⚫ 30-50% (적당히)',
-        '⚫ 30% 미만 (일부)',
-      ],
-    },
-    {
-      name: 'online_ratio',
-      label: '온라인 vs 오프라인 비중은?',
-      options: [
-        '온라인 100%',
-        '온라인 80%',
-        '온라인 60%',
-        '온라인 40%',
-        '온라인 20%',
-        '온라인 0%',
-      ],
-    },
+  field: 'management',
+  options: [
+    '👤 원장/병원장이 직접',
+    '👥 직원이 다른 업무와 함께',
+    '👤 마케팅 전담 직원 있음',
+    '🏢 외부 업체에 전체 위탁',
+    '🤝 일부는 직접, 일부는 외부',
+    '❓ 관리가 제대로 안되고 있음',
   ],
 }
 ```
 
 ---
 
-### 3.10 Q6: 콘텐츠 업데이트 주기
+### 3.11 Q5-1: 신규 환자 파악 방법
+
+```typescript
+{
+  id: 'Q5-1',
+  section: '성과 측정',
+  title: '마케팅을 통한 신규 환자를 어떻게 파악하나요?',
+  description: '복수 선택 가능합니다',
+  type: 'checkbox',
+  field: 'tracking_methods',
+  options: [
+    '온라인 예약 시스템으로 자동 집계',
+    '첫 방문 시 "어떻게 오셨나요?" 질문',
+    '전화 예약 시 확인',
+    '특정 이벤트/쿠폰으로 추적',
+    '대략적으로 추정만 함',
+    '따로 파악하지 않음',
+  ],
+}
+```
+
+---
+
+### 3.12 Q6: 콘텐츠 업데이트 주기
 
 ```typescript
 {

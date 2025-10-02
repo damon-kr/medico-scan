@@ -17,39 +17,41 @@ const Survey = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Partial<SurveyResponse>>({});
 
-  // 조건부 질문 필터링
+  // 조건부 질문 필터링 및 순서 정렬
   const getFilteredQuestions = () => {
-    return questions.filter((question) => {
-      if (!question.conditional) return true;
-      
-      const { dependsOn, values } = question.conditional;
-      const dependentValue = responses[dependsOn];
-      
-      // specialties 필드에 대한 특별 처리 (ranking 타입)
-      if (dependsOn === "specialties" && dependentValue) {
-        const rankingValue = dependentValue as { selected: string[]; ranking: { [key: string]: number } };
+    return questions
+      .filter((question) => {
+        if (!question.conditional) return true;
         
-        // 2순위가 '피부과/성형외과'인 경우, 1순위로 처리
-        const selectedSpecialties = rankingValue.selected || [];
-        const hasBeautyAs2nd = selectedSpecialties.length === 2 && 
-          selectedSpecialties[1] === "피부과/성형외과";
+        const { dependsOn, values } = question.conditional;
+        const dependentValue = responses[dependsOn];
         
-        if (hasBeautyAs2nd) {
-          // 1순위로 처리하기 위해 조건 충족으로 간주
+        // specialties 필드에 대한 특별 처리 (ranking 타입)
+        if (dependsOn === "specialties" && dependentValue) {
+          const rankingValue = dependentValue as { selected: string[]; ranking: { [key: string]: number } };
+          
+          // 2순위가 '피부과/성형외과'인 경우, 1순위로 처리
+          const selectedSpecialties = rankingValue.selected || [];
+          const hasBeautyAs2nd = selectedSpecialties.length === 2 && 
+            selectedSpecialties[1] === "피부과/성형외과";
+          
+          if (hasBeautyAs2nd) {
+            // 1순위로 처리하기 위해 조건 충족으로 간주
+            return values.some((v) => selectedSpecialties.includes(v));
+          }
+          
+          // 일반 케이스: selected 배열에 포함되어 있는지 확인
           return values.some((v) => selectedSpecialties.includes(v));
         }
         
-        // 일반 케이스: selected 배열에 포함되어 있는지 확인
-        return values.some((v) => selectedSpecialties.includes(v));
-      }
-      
-      // 다른 타입의 dependsOn 처리
-      if (Array.isArray(dependentValue)) {
-        return values.some((v) => dependentValue.includes(v));
-      }
-      
-      return values.includes(dependentValue);
-    });
+        // 다른 타입의 dependsOn 처리
+        if (Array.isArray(dependentValue)) {
+          return values.some((v) => dependentValue.includes(v));
+        }
+        
+        return values.includes(dependentValue);
+      })
+      .sort((a, b) => a.order - b.order); // order 기준 정렬 추가
   };
 
   const filteredQuestions = getFilteredQuestions();

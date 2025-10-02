@@ -143,41 +143,6 @@ export const questions: Question[] = [
     ],
   },
 
-  // Q4-4: 다른 채널 시도 경험
-  {
-    id: "new_channel_attempt",
-    section: "channels",
-    order: 4.4,
-    title: "새로운 마케팅 채널 시도에 대한 생각은?",
-    type: "radio",
-    validation: { required: true },
-    options: [
-      { value: "적극 테스트", label: "적극적으로 여러 채널을 테스트해봤음" },
-      { value: "시도했지만 중단", label: "한두 개 정도 시도해봤지만 효과가 없어서 중단" },
-      { value: "현재로 충분", label: "지금 채널만으로 충분해서 시도할 필요 없음" },
-      { value: "방법 모름", label: "시도하고 싶지만 방법을 모르겠음" },
-      { value: "리소스 부족", label: "시도하고 싶지만 리소스(시간/예산)가 부족함" },
-    ],
-  },
-
-  // Q4-5: 마케팅 관리 주체
-  {
-    id: "management",
-    section: "operations",
-    order: 4.5,
-    title: "마케팅 관리는 누가 하고 있나요?",
-    type: "radio",
-    validation: { required: true },
-    options: [
-      { value: "원장 직접", label: "원장/병원장이 직접", emoji: "👤" },
-      { value: "직원 겸임", label: "직원이 다른 업무와 함께", emoji: "👥" },
-      { value: "전담 직원", label: "마케팅 전담 직원 있음", emoji: "👤" },
-      { value: "외부 위탁", label: "외부 업체에 전체 위탁", emoji: "🏢" },
-      { value: "혼합", label: "일부는 직접, 일부는 외부", emoji: "🤝" },
-      { value: "관리 부재", label: "관리가 제대로 안되고 있음", emoji: "❓" },
-    ],
-  },
-
   // Q4-3: 채널별 비중
   {
     id: "channel_ratio",
@@ -217,6 +182,41 @@ export const questions: Question[] = [
           { value: "오프라인 100%", label: "온라인 0% : 오프라인 100%" },
         ],
       },
+    ],
+  },
+
+  // Q4-4: 다른 채널 시도 경험
+  {
+    id: "new_channel_attempt",
+    section: "channels",
+    order: 4.4,
+    title: "새로운 마케팅 채널 시도에 대한 생각은?",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "적극 테스트", label: "적극적으로 여러 채널을 테스트해봤음" },
+      { value: "시도했지만 중단", label: "한두 개 정도 시도해봤지만 효과가 없어서 중단" },
+      { value: "현재로 충분", label: "지금 채널만으로 충분해서 시도할 필요 없음" },
+      { value: "방법 모름", label: "시도하고 싶지만 방법을 모르겠음" },
+      { value: "리소스 부족", label: "시도하고 싶지만 리소스(시간/예산)가 부족함" },
+    ],
+  },
+
+  // Q4-5: 마케팅 관리 주체
+  {
+    id: "management",
+    section: "operations",
+    order: 4.5,
+    title: "마케팅 관리는 누가 하고 있나요?",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "원장 직접", label: "원장/병원장이 직접", emoji: "👤" },
+      { value: "직원 겸임", label: "직원이 다른 업무와 함께", emoji: "👥" },
+      { value: "전담 직원", label: "마케팅 전담 직원 있음", emoji: "👤" },
+      { value: "외부 위탁", label: "외부 업체에 전체 위탁", emoji: "🏢" },
+      { value: "혼합", label: "일부는 직접, 일부는 외부", emoji: "🤝" },
+      { value: "관리 부재", label: "관리가 제대로 안되고 있음", emoji: "❓" },
     ],
   },
 
