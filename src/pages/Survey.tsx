@@ -107,22 +107,6 @@ const Survey = () => {
     }));
   };
 
-  const getQuestionTypeLabel = (type: string): string => {
-    switch (type) {
-      case "multi-select":
-        return "해당하는 항목을 전부 선택해 주세요";
-      case "checkbox":
-        return "해당하는 항목을 선택해 주세요";
-      case "radio":
-        return "해당하는 항목을 하나만 선택해 주세요";
-      case "ranking":
-        return "사용하는 채널을 선택하고 순위를 매겨주세요";
-      case "dropdown":
-        return "항목을 선택해 주세요";
-      default:
-        return "";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -167,12 +151,6 @@ const Survey = () => {
               )}
             </div>
 
-            {/* Question Type Hint */}
-            <div className="mb-6">
-              <p className="text-sm text-muted-foreground italic">
-                {getQuestionTypeLabel(currentQuestion.type)}
-              </p>
-            </div>
 
             {/* Question Content */}
             <div className="space-y-4 mb-12">
