@@ -345,7 +345,7 @@ VALUES
   description: '1순위와 2순위를 선택해주세요 (2순위는 선택사항)',
   type: 'ranking',
   field: 'specialties',
-  validation: { required: true, min: 1 },
+  validation: { required: true, min: 1, max: 2 },
   options: [
     '💆 피부과/성형외과 (미용 중심)',
     '🦷 치과 (일반/교정/임플란트)',
@@ -392,8 +392,9 @@ VALUES
 {
   id: 'Q4',
   section: '마케팅 채널 현황',
-  title: '현재 사용 중인 마케팅 채널을 모두 선택 후, 가장 비중이 큰 순서대로 3개를 번호로 표시해주세요',
-  type: 'checkbox + ranking',
+  title: '현재 사용 중인 마케팅 채널을 모두 선택 후, 가장 비중이 큰 순서대로 3개를 선택해주세요',
+  type: 'ranking',
+  validation: { required: true, min: 1, max: 3 },
   fields: [
     {
       name: 'channels',

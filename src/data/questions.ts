@@ -50,7 +50,7 @@ export const questions: Question[] = [
     title: "주요 진료 분야를 선택해주세요",
     description: "1순위와 2순위를 선택해주세요 (2순위는 선택사항)",
     type: "ranking",
-    validation: { required: true, min: 1 },
+    validation: { required: true, min: 1, max: 2 },
     options: [
       { value: "피부과/성형외과", label: "피부과/성형외과 (미용 중심)", emoji: "💆" },
       { value: "치과", label: "치과 (일반/교정/임플란트)", emoji: "🦷" },
@@ -89,7 +89,7 @@ export const questions: Question[] = [
     order: 4,
     title: "현재 사용 중인 마케팅 채널을 모두 선택 후, 가장 비중이 큰 순서대로 3개를 선택해주세요",
     type: "ranking",
-    validation: { required: true, min: 1 },
+    validation: { required: true, min: 1, max: 3 },
     options: [
       { value: "네이버 검색광고", label: "네이버 검색광고/파워링크" },
       { value: "네이버 플레이스", label: "네이버 플레이스 (스마트플레이스)" },

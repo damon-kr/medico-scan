@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 interface RankingQuestionProps {
   question: Question;
@@ -16,8 +17,15 @@ interface RankingQuestionProps {
 }
 
 export const RankingQuestion = ({ question, value, onChange }: RankingQuestionProps) => {
+  const { toast } = useToast();
   const selected = value?.selected || [];
   const ranking = value?.ranking || {};
+  
+  // 최대 선택 가능한 순위 개수 (validation.max 또는 선택된 항목 수 중 작은 값)
+  const maxRank = Math.min(
+    question.validation?.max || selected.length,
+    selected.length
+  );
 
   const handleToggle = (optionValue: string) => {
     const newSelected = selected.includes(optionValue)
@@ -34,7 +42,23 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
   };
 
   const handleRankChange = (optionValue: string, rank: string) => {
-    const newRanking = { ...ranking, [optionValue]: parseInt(rank) };
+    const rankNum = parseInt(rank);
+    
+    // 중복 순위 체크
+    const isDuplicate = Object.entries(ranking).some(
+      ([key, value]) => key !== optionValue && value === rankNum
+    );
+    
+    if (isDuplicate) {
+      toast({
+        title: "이미 선택한 순위입니다",
+        description: "다른 순위를 선택해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newRanking = { ...ranking, [optionValue]: rankNum };
     onChange({ selected, ranking: newRanking });
   };
 
@@ -71,9 +95,11 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
                     <SelectValue placeholder="순위 선택" />
                   </SelectTrigger>
                   <SelectContent className="bg-card z-50">
-                    <SelectItem value="1">1순위</SelectItem>
-                    <SelectItem value="2">2순위</SelectItem>
-                    <SelectItem value="3">3순위</SelectItem>
+                    {Array.from({ length: maxRank }, (_, i) => i + 1).map((rank) => (
+                      <SelectItem key={rank} value={rank.toString()}>
+                        {rank}순위
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -81,9 +107,11 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
           </div>
         ))}
       </div>
-      <p className="text-sm text-muted-foreground">
-        사용 중인 채널을 모두 선택한 후, 가장 비중이 큰 순서대로 3개를 선택해주세요
-      </p>
+      {question.description && (
+        <p className="text-sm text-muted-foreground">
+          {question.description}
+        </p>
+      )}
     </div>
   );
 };
