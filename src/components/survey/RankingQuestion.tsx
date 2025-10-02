@@ -104,11 +104,6 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
           </div>
         ))}
       </div>
-      {question.description && (
-        <p className="text-sm text-muted-foreground">
-          {question.description}
-        </p>
-      )}
     </div>
   );
 };
