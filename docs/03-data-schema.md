@@ -335,17 +335,17 @@ VALUES
 
 ---
 
-### 3.3 Q2: 주요 진료 분야
+### 3.3 Q2: 주요 진료 분야 (1순위, 2순위 선택)
 
 ```typescript
 {
   id: 'Q2',
   section: '기본 정보',
   title: '주요 진료 분야를 선택해주세요',
-  description: '최대 2개까지 선택 가능합니다',
-  type: 'checkbox',
-  maxSelections: 2,
+  description: '1순위와 2순위를 선택해주세요 (2순위는 선택사항)',
+  type: 'ranking',
   field: 'specialties',
+  validation: { required: true, min: 1 },
   options: [
     '💆 피부과/성형외과 (미용 중심)',
     '🦷 치과 (일반/교정/임플란트)',
@@ -356,6 +356,8 @@ VALUES
     '🧠 정신건강의학과/신경과',
     '🏥 기타 전문 진료과',
   ],
+  // 특별 로직: 2순위가 '피부과/성형외과'인 경우, 
+  // 조건부 질문(Q4-1)에서는 1순위로 처리됨
 }
 ```
 
@@ -426,6 +428,10 @@ VALUES
 
 **표시 조건**: Q2에서 "피부과/성형외과" 선택 시만 표시
 
+**특별 로직**: 
+- Q2에서 2순위가 '피부과/성형외과'인 경우에도 이 질문이 표시됨
+- 설문 시스템에서 2순위가 '피부과/성형외과'일 경우 1순위로 처리
+
 ```typescript
 {
   id: 'Q4-1',
@@ -435,7 +441,9 @@ VALUES
   field: 'commercial_platform',
   conditional: {
     field: 'specialties',
-    includes: '피부과/성형외과',
+    values: ['피부과/성형외과'],
+    // ranking 타입의 selected 배열에서 체크
+    // 2순위가 '피부과/성형외과'인 경우에도 조건 충족으로 처리
   },
   options: [
     '유료 광고 적극 활용 중',

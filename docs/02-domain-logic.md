@@ -155,7 +155,13 @@ responses.tracking_methods.includes('대략적으로 추정만 함')
 
 **진단 조건**:
 ```typescript
-responses.specialties.includes('피부과/성형외과') &&
+// specialties는 ranking 타입: { selected: string[], ranking: { [key: string]: number } }
+// 1순위 또는 2순위에 '피부과/성형외과'가 있는 경우
+// (주의: 2순위가 '피부과/성형외과'인 경우 1순위로 처리)
+const selectedSpecialties = responses.specialties.selected || [];
+const hasBeautySpecialty = selectedSpecialties.includes('피부과/성형외과');
+
+hasBeautySpecialty &&
 responses.commercial_platform === '사용하지 않음' &&
 responses.online_ratio !== '온라인 100%'
 ```
@@ -325,8 +331,12 @@ function determinePrimaryIssue(responses: SurveyResponse): DiagnosisType {
   }
   
   // 7. 온라인 소극성 체크 (피부과/성형외과)
+  // specialties는 ranking 타입이므로 selected 배열 확인
+  const selectedSpecialties = responses.specialties?.selected || [];
+  const hasBeautySpecialty = selectedSpecialties.includes('피부과/성형외과');
+  
   if (
-    responses.specialties.includes('피부과/성형외과') &&
+    hasBeautySpecialty &&
     responses.commercial_platform === '사용하지 않음' &&
     responses.online_ratio !== '온라인 100%'
   ) {

@@ -17,9 +17,45 @@ const Survey = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Partial<SurveyResponse>>({});
 
-  const totalSteps = questions.length;
+  // 조건부 질문 필터링
+  const getFilteredQuestions = () => {
+    return questions.filter((question) => {
+      if (!question.conditional) return true;
+      
+      const { dependsOn, values } = question.conditional;
+      const dependentValue = responses[dependsOn];
+      
+      // specialties 필드에 대한 특별 처리 (ranking 타입)
+      if (dependsOn === "specialties" && dependentValue) {
+        const rankingValue = dependentValue as { selected: string[]; ranking: { [key: string]: number } };
+        
+        // 2순위가 '피부과/성형외과'인 경우, 1순위로 처리
+        const selectedSpecialties = rankingValue.selected || [];
+        const hasBeautyAs2nd = selectedSpecialties.length === 2 && 
+          selectedSpecialties[1] === "피부과/성형외과";
+        
+        if (hasBeautyAs2nd) {
+          // 1순위로 처리하기 위해 조건 충족으로 간주
+          return values.some((v) => selectedSpecialties.includes(v));
+        }
+        
+        // 일반 케이스: selected 배열에 포함되어 있는지 확인
+        return values.some((v) => selectedSpecialties.includes(v));
+      }
+      
+      // 다른 타입의 dependsOn 처리
+      if (Array.isArray(dependentValue)) {
+        return values.some((v) => dependentValue.includes(v));
+      }
+      
+      return values.includes(dependentValue);
+    });
+  };
+
+  const filteredQuestions = getFilteredQuestions();
+  const totalSteps = filteredQuestions.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
-  const currentQuestion = questions[currentStep];
+  const currentQuestion = filteredQuestions[currentStep];
 
   const validateCurrentQuestion = (): boolean => {
     const currentValue = responses[currentQuestion.id];
@@ -101,10 +137,25 @@ const Survey = () => {
   };
 
   const handleResponseChange = (questionId: string, value: any) => {
-    setResponses((prev) => ({
-      ...prev,
-      [questionId]: value,
-    }));
+    setResponses((prev) => {
+      const updated = {
+        ...prev,
+        [questionId]: value,
+      };
+      
+      // specialties 응답 변경 시, 조건부 질문의 응답 초기화
+      if (questionId === "specialties") {
+        const rankingValue = value as { selected: string[]; ranking: { [key: string]: number } };
+        const selectedSpecialties = rankingValue?.selected || [];
+        
+        // 피부과/성형외과가 선택되지 않았으면 commercialPlatform 응답 제거
+        if (!selectedSpecialties.includes("피부과/성형외과")) {
+          delete updated.commercialPlatform;
+        }
+      }
+      
+      return updated;
+    });
   };
 
 

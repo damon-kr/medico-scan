@@ -42,15 +42,15 @@ export const questions: Question[] = [
     ],
   },
 
-  // Q2: 주요 진료 분야
+  // Q2: 주요 진료 분야 (1순위, 2순위 선택)
   {
     id: "specialties",
     section: "basic",
     order: 2,
     title: "주요 진료 분야를 선택해주세요",
-    description: "최대 2개까지 선택 가능합니다",
-    type: "checkbox",
-    validation: { required: true, min: 1, max: 2 },
+    description: "1순위와 2순위를 선택해주세요 (2순위는 선택사항)",
+    type: "ranking",
+    validation: { required: true, min: 1 },
     options: [
       { value: "피부과/성형외과", label: "피부과/성형외과 (미용 중심)", emoji: "💆" },
       { value: "치과", label: "치과 (일반/교정/임플란트)", emoji: "🦷" },
