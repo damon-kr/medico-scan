@@ -263,6 +263,7 @@ export const questions: Question[] = [
     section: "measurement",
     order: 9,
     title: "현재 온라인에서 우리 병원은 어떤 상태인가요?",
+    description: "해당되는 항목을 모두 선택해주세요",
     type: "checkbox",
     validation: { required: true, min: 1 },
     options: [
