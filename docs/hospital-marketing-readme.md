@@ -6,6 +6,52 @@
 
 ## 아키텍처
 
+### 시스템 아키텍처 다이어그램
+
+```mermaid
+graph TB
+    subgraph "Frontend - React App"
+        A[Pages] --> B[Components]
+        B --> C[UI Components shadcn]
+        A --> D[React Router]
+        B --> E[React Query]
+    end
+    
+    subgraph "State Management"
+        E --> F[Server State]
+        B --> G[Local State]
+        B --> H[Form State React Hook Form]
+    end
+    
+    subgraph "Backend - Supabase"
+        I[PostgreSQL Database]
+        J[Supabase Auth]
+        K[Supabase Storage]
+        L[Edge Functions]
+    end
+    
+    subgraph "Core Logic"
+        M[Scoring Engine]
+        N[Diagnosis Engine]
+        O[Solution Matching]
+    end
+    
+    E <-->|API Calls| I
+    A -->|Auth| J
+    B -->|File Upload| K
+    L -->|Email Service| P[Email Provider]
+    
+    A --> M
+    M --> N
+    N --> O
+    O --> I
+    
+    I -.->|Read| Q[surveys table]
+    I -.->|Write| R[survey_results table]
+    I -.->|Write| S[leads table]
+    I -.->|Read| T[benchmarks table]
+```
+
 ### 프론트엔드
 - **Framework**: React + TypeScript + Vite
 - **UI Library**: shadcn/ui + Tailwind CSS
@@ -98,6 +144,73 @@ src/
 - updated_at (timestamp)
 
 ## 컴포넌트 정의 및 코드 매핑
+
+### 컴포넌트 관계 다이어그램
+
+```mermaid
+graph TB
+    subgraph "Pages"
+        P1[Index.tsx - Landing]
+        P2[Survey.tsx - Survey Flow]
+        P3[Results.tsx - Results Display]
+    end
+    
+    subgraph "Survey Components"
+        S1[RadioQuestion]
+        S2[CheckboxQuestion]
+        S3[RankingQuestion]
+        S4[MultiSelectQuestion]
+        S5[DropdownQuestion]
+    end
+    
+    subgraph "Result Components"
+        R1[ScoreCard]
+        R2[DiagnosisCard]
+        R3[BestCaseComparison]
+        R4[SolutionCard]
+    end
+    
+    subgraph "Shared UI"
+        U1[Button]
+        U2[Card]
+        U3[Progress]
+        U4[Dialog]
+    end
+    
+    subgraph "Data Layer"
+        D1[questions.ts]
+        D2[benchmarks.ts]
+        D3[Supabase Client]
+    end
+    
+    P1 -->|Navigate| P2
+    P2 -->|Submit| P3
+    
+    P2 --> S1
+    P2 --> S2
+    P2 --> S3
+    P2 --> S4
+    S4 --> S5
+    
+    P3 --> R1
+    P3 --> R2
+    P3 --> R3
+    P3 --> R4
+    
+    S1 --> U1
+    S2 --> U1
+    S3 --> U1
+    S4 --> U1
+    R1 --> U2
+    R2 --> U2
+    P2 --> U3
+    P3 --> U4
+    
+    P2 -.->|Read| D1
+    P3 -.->|Read| D2
+    P2 -.->|Write| D3
+    P3 -.->|Read| D3
+```
 
 ### 페이지 컴포넌트
 

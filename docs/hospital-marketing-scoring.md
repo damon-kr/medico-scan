@@ -65,6 +65,46 @@
 
 ## 3. 진단 로직
 
+### 진단 로직 결정 트리
+
+```mermaid
+graph TD
+    Start[설문 응답 분석] --> Check1{채널 수 ≤ 2 AND<br/>원툴형 응답?}
+    
+    Check1 -->|Yes| Type7[Type 7: 원툴형<br/>가중치: 0.95]
+    Check1 -->|No| Check2{네이버 TOP1 AND<br/>비중 ≥ 70%?}
+    
+    Check2 -->|Yes| Type1[Type 1: 네이버 의존 과다형<br/>가중치: 0.9]
+    Check2 -->|No| Check3{온라인 비중<br/>≤ 20%?}
+    
+    Check3 -->|Yes| Type2[Type 2: 디지털 사각지대형<br/>가중치: 0.9]
+    Check3 -->|No| Check4{업데이트<br/>월 1회 이하?}
+    
+    Check4 -->|Yes| Type4[Type 4: 방치 운영형<br/>가중치: 0.85]
+    Check4 -->|No| Check5{성과 측정<br/>안함?}
+    
+    Check5 -->|Yes| Type5[Type 5: 성과 맹목형<br/>가중치: 0.85]
+    Check5 -->|No| Check6{채널 ≥ 7 AND<br/>관리 부실?}
+    
+    Check6 -->|Yes| Type3[Type 3: 무분별 살포형<br/>가중치: 0.8]
+    Check6 -->|No| Check7{피부/성형 AND<br/>플랫폼 미사용?}
+    
+    Check7 -->|Yes| Type6[Type 6: 온라인 소극형<br/>가중치: 0.75]
+    Check7 -->|No| Default[일반형]
+    
+    Type7 --> Result[주요 진단 결과]
+    Type1 --> Result
+    Type2 --> Result
+    Type4 --> Result
+    Type5 --> Result
+    Type3 --> Result
+    Type6 --> Result
+    Default --> Result
+    
+    Result --> Secondary[부가 문제 식별]
+    Secondary --> Solution[맞춤형 솔루션 매칭]
+```
+
 ### 3.1 주요 문제 유형 판정 규칙
 
 ```python
@@ -132,6 +172,48 @@ def get_market_characteristics(location, specialty):
 ```
 
 ### 3.3 점수 계산 상세
+
+#### 점수 계산 프로세스 플로우
+
+```mermaid
+graph LR
+    A[설문 응답] --> B[카테고리별 계산]
+    
+    B --> C1[채널 활용도<br/>30점]
+    B --> C2[운영 관리<br/>25점]
+    B --> C3[성과 측정<br/>25점]
+    B --> C4[예산 규모<br/>20점]
+    
+    C1 --> D1[채널 수: 10점<br/>다양성: 10점<br/>플랫폼: 10점]
+    C2 --> D2[업데이트: 15점<br/>관리체계: 10점]
+    C3 --> D3[환자추적: 15점<br/>온라인현황: 10점]
+    C4 --> D4[예산 구간별<br/>5-20점]
+    
+    D1 --> E[카테고리 점수 합산]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    
+    E --> F[총점 100점]
+    
+    F --> G{레벨 판정}
+    G -->|0-25점| L1[Level 1: 초급]
+    G -->|26-50점| L2[Level 2: 기본]
+    G -->|51-75점| L3[Level 3: 중급]
+    G -->|76-100점| L4[Level 4: 고급]
+    
+    F --> H[업종별 평균 비교]
+    F --> I[지역별 평균 비교]
+    F --> J[규모별 평균 비교]
+    
+    L1 --> K[최종 진단 리포트]
+    L2 --> K
+    L3 --> K
+    L4 --> K
+    H --> K
+    I --> K
+    J --> K
+```
 
 #### 채널 활용도 (30점)
 - 사용 채널 수: 10점
