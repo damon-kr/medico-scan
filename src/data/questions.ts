@@ -7,6 +7,7 @@ export const questions: Question[] = [
     section: "basic",
     order: 1,
     title: "병원 위치와 규모를 선택해주세요",
+    description: "지역과 규모를 각각 선택해주세요",
     type: "multi-select",
     validation: { required: true },
     subQuestions: [
