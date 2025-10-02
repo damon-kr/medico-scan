@@ -220,6 +220,25 @@ export const questions: Question[] = [
     ],
   },
 
+  // Q8: 신규 환자 파악 방법
+  {
+    id: "tracking_methods",
+    section: "measurement",
+    order: 5.5,
+    title: "마케팅을 통한 신규 환자를 어떻게 파악하나요?",
+    description: "복수 선택 가능합니다",
+    type: "checkbox",
+    validation: { required: true, min: 1 },
+    options: [
+      { value: "온라인 예약", label: "온라인 예약 시스템으로 자동 집계" },
+      { value: "직접 질문", label: "첫 방문 시 '어떻게 오셨나요?' 질문" },
+      { value: "전화 확인", label: "전화 예약 시 확인" },
+      { value: "이벤트 추적", label: "특정 이벤트/쿠폰으로 추적" },
+      { value: "대략 추정", label: "대략적으로 추정만 함" },
+      { value: "파악 안함", label: "따로 파악하지 않음" },
+    ],
+  },
+
   // Q6: 콘텐츠 업데이트 주기
   {
     id: "update_frequency",
@@ -236,25 +255,6 @@ export const questions: Question[] = [
       { value: "월 2-3회", label: "월 2-3회 정도", emoji: "📅" },
       { value: "월 1회 이하", label: "월 1회 이하", emoji: "📅" },
       { value: "거의 안함", label: "만들어놓고 거의 안함", emoji: "📅" },
-    ],
-  },
-
-  // Q8: 신규 환자 파악 방법
-  {
-    id: "tracking_methods",
-    section: "measurement",
-    order: 8,
-    title: "마케팅을 통한 신규 환자를 어떻게 파악하나요?",
-    description: "복수 선택 가능합니다",
-    type: "checkbox",
-    validation: { required: true, min: 1 },
-    options: [
-      { value: "온라인 예약", label: "온라인 예약 시스템으로 자동 집계" },
-      { value: "직접 질문", label: "첫 방문 시 '어떻게 오셨나요?' 질문" },
-      { value: "전화 확인", label: "전화 예약 시 확인" },
-      { value: "이벤트 추적", label: "특정 이벤트/쿠폰으로 추적" },
-      { value: "대략 추정", label: "대략적으로 추정만 함" },
-      { value: "파악 안함", label: "따로 파악하지 않음" },
     ],
   },
 
