@@ -97,6 +97,108 @@ src/
 - best_case_story (jsonb)
 - updated_at (timestamp)
 
+## 컴포넌트 정의 및 코드 매핑
+
+### 페이지 컴포넌트
+
+#### Index.tsx - 랜딩 페이지 (`/`)
+- **Hero Section**: 서비스 소개 및 CTA
+- **Features Section**: 주요 기능 3가지 소개
+- **Benefits Section**: 사용 효과
+- **Trust Section**: 신뢰성 요소
+
+#### Survey.tsx - 설문 페이지 (`/survey`)
+질문 UI는 3가지 영역으로 구성:
+
+**1. 질문 헤더 (Question Header)** - lines 150-168
+- 섹션 배지 (Section Badge): 현재 섹션 표시
+- 질문 제목 (Question Title): 메인 질문
+- 질문 설명 (Question Description): 부연 설명
+
+**2. 질문 서브 (Question Sub-header)** - lines 171-175
+- 질문 타입 힌트 (Question Type Hint): 선택 방법 안내
+
+**3. 선택지 (Question Options)** - lines 178+
+- 질문 타입에 따라 동적으로 렌더링되는 영역
+
+#### Results.tsx - 결과 페이지 (`/results/:id`)
+- **Score Card**: 총점 및 레벨 표시
+- **Diagnosis Card**: 진단 내용
+- **Solutions Card**: 맞춤형 개선안
+- **CTA Section**: 상담 신청 / 리포트 다운로드
+
+### 설문 질문 컴포넌트
+
+#### RadioQuestion.tsx
+- **용도**: 단일 선택 질문
+- **데이터**: `type: "radio"`
+- **예시**: Q1(location), Q2(hospital_size), Q4(budget)
+
+#### CheckboxQuestion.tsx
+- **용도**: 다중 선택 질문
+- **데이터**: `type: "checkbox"`
+- **예시**: Q3(specialties)
+
+#### RankingQuestion.tsx
+- **용도**: 순위 매기기 질문
+- **데이터**: `type: "ranking"`
+- **예시**: Q10(main_problems)
+
+#### MultiSelectQuestion.tsx
+- **용도**: 복합 선택 질문 (메인 질문 + 서브 질문)
+- **데이터**: `type: "multiselect"`, `subQuestions` 포함
+- **구조**:
+  - 메인 옵션 체크박스
+  - 각 옵션별 서브 질문 (radio 또는 dropdown)
+- **예시**: Q5(channels), Q6(content), Q7(management), Q8(tracking)
+
+#### DropdownQuestion.tsx
+- **용도**: 드롭다운 선택 질문
+- **데이터**: `type: "dropdown"`
+- **사용처**: MultiSelectQuestion의 서브 질문으로 주로 사용
+
+### 질문 데이터 구조 (questions.ts)
+
+#### 질문 ID 매핑
+- **Q1**: location (지역)
+- **Q2**: hospital_size (규모)
+- **Q3**: specialties (진료과목)
+- **Q4**: budget (예산)
+- **Q5**: channels (마케팅 채널)
+- **Q6**: content (콘텐츠 업데이트)
+- **Q7**: management (관리 현황)
+- **Q8**: tracking (환자 추적)
+- **Q9**: online_status (온라인 현황)
+- **Q10**: main_problems (주요 문제)
+
+#### 질문 타입별 검증 규칙
+- **radio**: 단일 값 필수
+- **checkbox**: 최소 1개 이상 선택
+- **multiselect**: 선택된 메인 옵션의 서브 질문 필수 응답
+- **ranking**: 지정된 개수만큼 순위 선택
+
+### 미구현 컴포넌트
+
+#### 스코어링 시스템
+- `lib/scoring/scoreCalculator.ts`: 점수 계산 로직 (예정)
+- 카테고리별 점수 계산
+- 총점 및 레벨 판정
+
+#### 진단 엔진
+- `lib/diagnosis/diagnosisEngine.ts`: 진단 로직 (예정)
+- 문제 유형 판정
+- 맞춤형 솔루션 생성
+
+#### 데이터베이스 연동
+- Supabase 클라이언트 설정
+- surveys, survey_results, leads 테이블 CRUD
+- 벤치마크 데이터 조회
+
+#### 전환 기능
+- 이메일 수집 폼
+- 상담 신청 폼
+- PDF 리포트 생성
+
 ## 핵심 모듈
 
 ### 1. 설문 엔진 (Survey Engine)
