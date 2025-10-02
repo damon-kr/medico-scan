@@ -1,6 +1,5 @@
 import { Question, QuestionOption } from "@/types/survey";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 
 interface CheckboxQuestionProps {
   question: Question;
@@ -34,15 +33,12 @@ export const CheckboxQuestion = ({ question, value = [], onChange }: CheckboxQue
           <Checkbox
             id={`${question.id}-${index}`}
             checked={value?.includes(option.value)}
-            onCheckedChange={() => handleToggle(option.value)}
+            className="pointer-events-none"
           />
-          <Label
-            htmlFor={`${question.id}-${index}`}
-            className="flex-1 cursor-pointer text-base"
-          >
+          <div className="flex-1 text-base">
             {option.emoji && <span className="mr-2">{option.emoji}</span>}
             {option.label}
-          </Label>
+          </div>
         </div>
       ))}
       {question.validation?.max && (
