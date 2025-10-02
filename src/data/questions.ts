@@ -160,6 +160,24 @@ export const questions: Question[] = [
     ],
   },
 
+  // Q7: 마케팅 관리 주체
+  {
+    id: "management",
+    section: "operations",
+    order: 4.4,
+    title: "마케팅 관리는 누가 하고 있나요?",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "원장 직접", label: "원장/병원장이 직접", emoji: "👤" },
+      { value: "직원 겸임", label: "직원이 다른 업무와 함께", emoji: "👥" },
+      { value: "전담 직원", label: "마케팅 전담 직원 있음", emoji: "👤" },
+      { value: "외부 위탁", label: "외부 업체에 전체 위탁", emoji: "🏢" },
+      { value: "혼합", label: "일부는 직접, 일부는 외부", emoji: "🤝" },
+      { value: "관리 부재", label: "관리가 제대로 안되고 있음", emoji: "❓" },
+    ],
+  },
+
   // Q5: 채널별 비중
   {
     id: "channel_ratio",
@@ -218,24 +236,6 @@ export const questions: Question[] = [
       { value: "월 2-3회", label: "월 2-3회 정도", emoji: "📅" },
       { value: "월 1회 이하", label: "월 1회 이하", emoji: "📅" },
       { value: "거의 안함", label: "만들어놓고 거의 안함", emoji: "📅" },
-    ],
-  },
-
-  // Q7: 마케팅 관리 주체
-  {
-    id: "management",
-    section: "operations",
-    order: 7,
-    title: "마케팅 관리는 누가 하고 있나요?",
-    type: "radio",
-    validation: { required: true },
-    options: [
-      { value: "원장 직접", label: "원장/병원장이 직접", emoji: "👤" },
-      { value: "직원 겸임", label: "직원이 다른 업무와 함께", emoji: "👥" },
-      { value: "전담 직원", label: "마케팅 전담 직원 있음", emoji: "👤" },
-      { value: "외부 위탁", label: "외부 업체에 전체 위탁", emoji: "🏢" },
-      { value: "혼합", label: "일부는 직접, 일부는 외부", emoji: "🤝" },
-      { value: "관리 부재", label: "관리가 제대로 안되고 있음", emoji: "❓" },
     ],
   },
 
