@@ -43,23 +43,20 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
 
   const handleRankChange = (optionValue: string, rank: string) => {
     const rankNum = parseInt(rank);
-    
-    // 중복 순위 체크
-    const isDuplicate = Object.entries(ranking).some(
-      ([key, value]) => key !== optionValue && value === rankNum
-    );
-    
-    if (isDuplicate) {
-      toast({
-        title: "이미 선택한 순위입니다",
-        description: "다른 순위를 선택해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     const newRanking = { ...ranking, [optionValue]: rankNum };
     onChange({ selected, ranking: newRanking });
+  };
+
+  // 각 옵션에 대해 사용 가능한 순위 목록 계산
+  const getAvailableRanks = (currentOptionValue: string) => {
+    // 다른 옵션에서 이미 사용 중인 순위들
+    const usedRanks = Object.entries(ranking)
+      .filter(([key]) => key !== currentOptionValue)
+      .map(([, value]) => value);
+    
+    // 전체 순위 중 사용되지 않은 순위만 반환
+    return Array.from({ length: maxRank }, (_, i) => i + 1)
+      .filter(rank => !usedRanks.includes(rank));
   };
 
   return (
@@ -95,7 +92,7 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
                     <SelectValue placeholder="순위 선택" />
                   </SelectTrigger>
                   <SelectContent className="bg-card z-50">
-                    {Array.from({ length: maxRank }, (_, i) => i + 1).map((rank) => (
+                    {getAvailableRanks(option.value).map((rank) => (
                       <SelectItem key={rank} value={rank.toString()}>
                         {rank}순위
                       </SelectItem>
