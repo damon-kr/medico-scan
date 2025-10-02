@@ -220,7 +220,7 @@ export const questions: Question[] = [
     ],
   },
 
-  // Q8: 신규 환자 파악 방법
+  // Q5-1: 신규 환자 파악 방법
   {
     id: "tracking_methods",
     section: "measurement",
