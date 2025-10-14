@@ -40,11 +40,18 @@ export interface SurveyResponse {
   trackingMethods: string[];
 
   // Q9: 온라인 현황 (복수 선택)
-  onlineStatusPositive: string[];
-  onlineStatusNegative: string[];
+  onlineStatusPositive?: string[];
+  onlineStatusNegative?: string[];
 
   // Q10: 가장 큰 문제 (최대 2개)
   mainProblems: string[];
+
+  // 추가 질문들 (미래 확장용)
+  decisionMaking?: string;
+  patientLifetimeValue?: string;
+  channelRatio?: string;
+  platformUsage?: string;
+  performanceTracking?: string[];
 }
 
 export interface SurveyResult {
