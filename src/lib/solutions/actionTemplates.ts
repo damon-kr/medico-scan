@@ -7,7 +7,7 @@ export function getActionTemplates(
   issueType: IssueType,
   responses: SurveyResponse
 ): Action[] {
-  const specialty = responses.specialties?.[0] || "";
+  const specialty = responses.specialties?.selected?.[0] || "";
   const budget = responses.budget || "";
 
   switch (issueType) {

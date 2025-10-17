@@ -16,10 +16,9 @@ export function calculateChannelScore(responses: SurveyResponse): number {
   score += calculateChannelDiversityScore(responses);
 
   // 3. 플랫폼 활용도 점수 (10점) - 피부과/성형외과만
+  const specialtiesSelected = responses.specialties?.selected || [];
   if (
-    responses.specialties &&
-    (responses.specialties.includes("피부과") ||
-      responses.specialties.includes("성형외과"))
+    specialtiesSelected.includes("피부과/성형외과")
   ) {
     score += calculatePlatformScore(responses);
   } else {

@@ -122,6 +122,23 @@
   - docs/03-data-schema.md: 질문 ID 및 순서 업데이트 (Q4-3, Q4-4, Q4-5, Q5-1 등)
   - docs/06-progress.md: Iteration 5 완료 기록
 
+### Iteration 6: 문서와 코드 동기화 및 참조 규칙 개선 (2025-10-17)
+
+**완료 항목**:
+- [x] 전체 코드베이스와 참조 문서 비교 분석
+- [x] 문서와 코드 불일치 사항 식별 및 수정
+  - [x] README.md를 실제 프로젝트 내용으로 전면 수정
+  - [x] 03-data-schema.md의 SurveyResponse 타입 정의를 실제 코드와 일치하도록 수정
+  - [x] 02-domain-logic.md의 진단 로직을 실제 구현과 일치하도록 수정
+- [x] 참조 규칙 검토 및 개선된 규칙 생성
+  - [x] REFERENCE_RULES.md 작성 (4-Layer 구조로 개선)
+  - [x] 코드-문서 동기화 프로세스 구체화
+  - [x] Layer별 정확성 요구사항 정의
+- [x] 규칙 관리 가이드라인 작성
+  - [x] RULES_MANAGEMENT_GUIDE.md 작성
+  - [x] 일일/주간/월간 점검 프로세스 정의
+  - [x] 자동화 도구 및 팀 관리 방법 안내
+
 ---
 
 ## 📋 다음 작업 (Next Up)

@@ -2,18 +2,23 @@
 
 export interface SurveyResponse {
   // Q1: 병원 위치와 규모
-  location: string;
-  hospitalSize: string;
+  location_and_size?: {
+    location: string;
+    hospital_size: string;
+  };
 
-  // Q2: 주요 진료 분야 (최대 2개)
-  specialties: string[];
+  // Q2: 주요 진료 분야 (ranking 타입)
+  specialties?: {
+    selected: string[];
+    ranking: { [key: string]: number };
+  };
 
   // Q3: 월 마케팅 예산
-  budget: string;
+  budget?: string;
 
   // Q4: 사용 중인 마케팅 채널
-  channels: string[];
-  top1Channel: string;
+  channels?: string[];
+  top1Channel?: string;
   top2Channel?: string;
   top3Channel?: string;
 
@@ -21,30 +26,30 @@ export interface SurveyResponse {
   commercialPlatform?: string;
 
   // Q4-2: 채널 선택 이유
-  channelReason: string;
+  channelReason?: string;
 
   // Q4-3: 다른 채널 시도 경험
-  newChannelAttempt: string;
+  newChannelAttempt?: string;
 
   // Q5: 채널별 비중
-  top1Ratio: string;
-  onlineRatio: string;
+  top1Ratio?: string;
+  onlineRatio?: string;
 
   // Q6: 콘텐츠 업데이트 주기
-  updateFrequency: string;
+  updateFrequency?: string;
 
   // Q7: 마케팅 관리 주체
-  management: string;
+  management?: string;
 
   // Q8: 신규 환자 파악 방법 (복수 선택)
-  trackingMethods: string[];
+  trackingMethods?: string[];
 
   // Q9: 온라인 현황 (복수 선택)
   onlineStatusPositive?: string[];
   onlineStatusNegative?: string[];
 
   // Q10: 가장 큰 문제 (최대 2개)
-  mainProblems: string[];
+  mainProblems?: string[];
 
   // 추가 질문들 (미래 확장용)
   decisionMaking?: string;

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash($env:PATH += \";C:\\Users\\Master\\.local\\bin\")",
+      "Bash(powershell:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

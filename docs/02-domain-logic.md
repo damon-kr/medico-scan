@@ -158,12 +158,12 @@ responses.tracking_methods.includes('대략적으로 추정만 함')
 // specialties는 ranking 타입: { selected: string[], ranking: { [key: string]: number } }
 // 1순위 또는 2순위에 '피부과/성형외과'가 있는 경우
 // (주의: 2순위가 '피부과/성형외과'인 경우 1순위로 처리)
-const selectedSpecialties = responses.specialties.selected || [];
+const selectedSpecialties = responses.specialties?.selected || [];
 const hasBeautySpecialty = selectedSpecialties.includes('피부과/성형외과');
 
 hasBeautySpecialty &&
-responses.commercial_platform === '사용하지 않음' &&
-responses.online_ratio !== '온라인 100%'
+responses.commercialPlatform === '사용하지 않음' &&
+responses.onlineRatio !== '온라인 100%'
 ```
 
 **위험 요인**:
@@ -291,40 +291,40 @@ function determinePrimaryIssue(responses: SurveyResponse): DiagnosisType {
   
   // 1. 원툴형 체크 (최우선)
   if (
-    responses.channels.length <= 2 &&
-    responses.top1_ratio === '70% 이상' &&
-    (responses.channel_reason === '이전에_이_채널에서_성과가_좋았음' ||
-     responses.new_channel_attempt === '지금_채널만으로_충분해서_시도할_필요_없음')
+    (responses.channels?.length || 0) <= 2 &&
+    responses.top1Ratio === '70% 이상' &&
+    (responses.channelReason === '이전에_이_채널에서_성과가_좋았음' ||
+     responses.newChannelAttempt === '지금_채널만으로_충분해서_시도할_필요_없음')
   ) {
     issues.push({ type: '원툴형', weight: 0.95 });
   }
   
   // 2. 네이버 의존도 체크
   if (
-    responses.top1_channel === '네이버' &&
-    responses.top1_ratio === '70% 이상'
+    responses.top1Channel === '네이버' &&
+    responses.top1Ratio === '70% 이상'
   ) {
     issues.push({ type: '네이버_의존_과다형', weight: 0.9 });
   }
   
   // 3. 디지털 부족 체크
-  if (responses.online_ratio === '온라인 20%' || responses.online_ratio === '온라인 0%') {
+  if (responses.onlineRatio === '온라인 20%' || responses.onlineRatio === '온라인 0%') {
     issues.push({ type: '디지털_사각지대형', weight: 0.9 });
   }
   
   // 4. 관리 부실 체크
-  if (['월1회이하', '거의안함'].includes(responses.update_frequency)) {
+  if (['월1회이하', '거의안함'].includes(responses.updateFrequency || '')) {
     issues.push({ type: '방치_운영형', weight: 0.85 });
   }
   
   // 5. 측정 부재 체크
-  if (responses.tracking_methods.includes('따로 파악하지 않음')) {
+  if (responses.trackingMethods?.includes('따로 파악하지 않음')) {
     issues.push({ type: '성과_맹목형', weight: 0.85 });
   }
   
   // 6. 채널 과다 체크
   if (
-    responses.channels.length >= 7 &&
+    (responses.channels?.length || 0) >= 7 &&
     responses.management === '관리가_제대로_안되고_있음'
   ) {
     issues.push({ type: '무분별_살포형', weight: 0.8 });
@@ -337,8 +337,8 @@ function determinePrimaryIssue(responses: SurveyResponse): DiagnosisType {
   
   if (
     hasBeautySpecialty &&
-    responses.commercial_platform === '사용하지 않음' &&
-    responses.online_ratio !== '온라인 100%'
+    responses.commercialPlatform === '사용하지 않음' &&
+    responses.onlineRatio !== '온라인 100%'
   ) {
     issues.push({ type: '온라인_마케팅_소극형', weight: 0.75 });
   }
@@ -534,34 +534,37 @@ function calculateBudgetScore(budget: string): number {
 ```typescript
 function calculateTotalScore(responses: SurveyResponse): ScoreResult {
   const channelScore = 
-    calculateChannelCountScore(responses.channels.length) +
-    calculateChannelDiversityScore(responses.online_ratio) +
-    (responses.specialties.includes('피부과/성형외과')
-      ? calculatePlatformScore(responses.commercial_platform)
+    calculateChannelCountScore(responses.channels?.length || 0) +
+    calculateChannelDiversityScore(responses.onlineRatio || '') +
+    (responses.specialties?.selected?.includes('피부과/성형외과')
+      ? calculatePlatformScore(responses.commercialPlatform || '')
       : 10); // 일반 진료과는 기본 10점
   
   const operationScore =
-    calculateUpdateFrequencyScore(responses.update_frequency) +
-    calculateManagementScore(responses.management);
+    calculateUpdateFrequencyScore(responses.updateFrequency || '') +
+    calculateManagementScore(responses.management || '');
   
   const measurementScore =
-    calculateTrackingScore(responses.tracking_methods) +
+    calculateTrackingScore(responses.trackingMethods || []) +
     calculateOnlineStatusScore(
-      responses.online_status_positive,
-      responses.online_status_negative
+      responses.onlineStatusPositive || [],
+      responses.onlineStatusNegative || []
     );
   
-  const budgetScore = calculateBudgetScore(responses.budget);
+  const budgetScore = calculateBudgetScore(responses.budget || '');
   
   const totalScore = channelScore + operationScore + measurementScore + budgetScore;
   
   return {
-    total_score: totalScore,
-    channel_score: channelScore,
-    operation_score: operationScore,
-    measurement_score: measurementScore,
-    budget_score: budgetScore,
+    totalScore: totalScore,
+    categoryScores: {
+      channel: channelScore,
+      operation: operationScore,
+      measurement: measurementScore,
+      budget: budgetScore,
+    },
     level: determineLevel(totalScore),
+    levelName: getLevelName(determineLevel(totalScore)),
   };
 }
 
