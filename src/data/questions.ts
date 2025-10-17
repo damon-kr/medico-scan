@@ -320,4 +320,40 @@ export const questions: Question[] = [
       { value: "예산 부족", label: "예산이 부족함", emoji: "💭" },
     ],
   },
+
+  // Q11: 마케팅 의사결정 프로세스
+  {
+    id: "decision_making",
+    section: "measurement",
+    order: 11,
+    title: "마케팅 예산/채널을 어떻게 결정하시나요?",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "데이터 기반", label: "데이터 분석 후 결정 (GA, 전환 추적 등)", emoji: "📊" },
+      { value: "경쟁 분석", label: "경쟁 병원 분석 후 결정", emoji: "🔍" },
+      { value: "업체 제안", label: "광고 업체 제안을 따름", emoji: "💼" },
+      { value: "직감", label: "경험과 직감으로 결정", emoji: "💭" },
+      { value: "정해진 예산", label: "작년과 비슷하게 유지", emoji: "📅" },
+    ],
+  },
+
+  // Q12: 환자 생애가치(LTV) 인식
+  {
+    id: "patient_lifetime_value",
+    section: "measurement",
+    order: 12,
+    title: "신규 환자 1명이 병원에 가져다주는 평균 매출(생애가치)은 얼마나 되나요?",
+    description: "재방문, 추가 시술 등을 포함한 전체 매출",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "500만원 이상", label: "500만원 이상", emoji: "💎" },
+      { value: "300-500만원", label: "300-500만원", emoji: "💎" },
+      { value: "100-300만원", label: "100-300만원", emoji: "💎" },
+      { value: "50-100만원", label: "50-100만원", emoji: "💎" },
+      { value: "50만원 미만", label: "50만원 미만", emoji: "💎" },
+      { value: "모르겠음", label: "측정해본 적 없음/모르겠음", emoji: "❓" },
+    ],
+  },
 ];
