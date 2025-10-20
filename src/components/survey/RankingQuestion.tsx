@@ -29,6 +29,18 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
 
   const handleToggle = (optionValue: string) => {
     const isCurrentlySelected = selected.includes(optionValue);
+    const maxSelections = question.validation?.max || Infinity;
+    
+    // 최대 선택 개수 제한 체크
+    if (!isCurrentlySelected && selected.length >= maxSelections) {
+      toast({
+        title: "최대 선택 개수 초과",
+        description: `최대 ${maxSelections}개까지만 선택할 수 있습니다.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const newSelected = isCurrentlySelected
       ? selected.filter((v) => v !== optionValue)
       : [...selected, optionValue];
@@ -37,7 +49,25 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
     
     if (isCurrentlySelected) {
       // 체크 해제: 순위 제거
+      const removedRank = ranking[optionValue];
       delete newRanking[optionValue];
+      
+      // 해제된 순위가 마지막 순위인지 확인
+      const allRanks = Object.values(ranking).sort((a, b) => a - b);
+      const isLastRank = removedRank === Math.max(...allRanks);
+      
+      if (!isLastRank && newSelected.length > 0) {
+        // 처음이나 중간 순위 해제: 모든 순위 초기화
+        Object.keys(newRanking).forEach((key) => {
+          delete newRanking[key];
+        });
+        
+        toast({
+          title: "순위가 초기화되었습니다",
+          description: "처음/중간 순위를 해제하여 모든 순위가 초기화되었습니다. 다시 선택해주세요.",
+        });
+      }
+      // 마지막 순위 해제: 기존 순위 유지 (아무것도 안함)
     } else {
       // 새로운 항목 체크: 비어있는 가장 앞선 순위로 자동 지정
       const usedRanks = Object.values(newRanking);
