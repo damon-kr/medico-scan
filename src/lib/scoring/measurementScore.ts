@@ -25,7 +25,7 @@ export function calculateMeasurementScore(responses: SurveyResponse): number {
  * 환자 추적 평가 (10점)
  */
 function calculateTrackingScore(responses: SurveyResponse): number {
-  const tracking = responses.trackingMethods || [];
+  const tracking = Array.isArray(responses.trackingMethods) ? responses.trackingMethods : [];
   
   let score = 0;
 
@@ -54,8 +54,8 @@ function calculateTrackingScore(responses: SurveyResponse): number {
  * 온라인 현황 평가 (8점)
  */
 function calculateOnlineStatusScore(responses: SurveyResponse): number {
-  const positive = responses.onlineStatusPositive || [];
-  const negative = responses.onlineStatusNegative || [];
+  const positive = Array.isArray(responses.onlineStatusPositive) ? responses.onlineStatusPositive : [];
+  const negative = Array.isArray(responses.onlineStatusNegative) ? responses.onlineStatusNegative : [];
 
   let score = 0;
 

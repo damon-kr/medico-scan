@@ -16,11 +16,11 @@ export interface SurveyResponse {
   // Q3: 월 마케팅 예산
   budget?: string;
 
-  // Q4: 사용 중인 마케팅 채널
-  channels?: string[];
-  top1Channel?: string;
-  top2Channel?: string;
-  top3Channel?: string;
+  // Q4: 사용 중인 마케팅 채널 (ranking 타입)
+  channels?: {
+    selected: string[];
+    ranking: { [key: string]: number };
+  };
 
   // Q4-1: (조건부) 상업적 플랫폼 활용
   commercialPlatform?: string;
@@ -31,7 +31,7 @@ export interface SurveyResponse {
   // Q4-3: 다른 채널 시도 경험
   newChannelAttempt?: string;
 
-  // Q5: 채널별 비중
+  // Q4-3: 채널별 비중
   top1Ratio?: string;
   onlineRatio?: string;
 
@@ -54,7 +54,6 @@ export interface SurveyResponse {
   // 추가 질문들 (미래 확장용)
   decisionMaking?: string;
   patientLifetimeValue?: string;
-  channelRatio?: string;
   platformUsage?: string;
   performanceTracking?: string[];
 }

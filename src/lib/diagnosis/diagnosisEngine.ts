@@ -146,7 +146,8 @@ function identifyStrengths(
   }
 
   // 2. 채널 관련 강점 (3가지)
-  const channels = responses.channels || [];
+  const channelsData = responses.channels;
+  const channels = channelsData?.selected || [];
   if (channels.length >= 5) {
     strengths.push("멀티채널 전략 구사");
   }
@@ -158,7 +159,7 @@ function identifyStrengths(
   }
 
   // 3. 온라인 기반 강점 (5가지)
-  const positiveStatus = responses.onlineStatusPositive || [];
+  const positiveStatus = Array.isArray(responses.onlineStatusPositive) ? responses.onlineStatusPositive : [];
   if (positiveStatus.includes("검색 노출 우수")) {
     strengths.push("강력한 검색 노출");
   }
@@ -187,7 +188,7 @@ function identifyStrengths(
   }
 
   // 5. 측정 및 분석 강점 (3가지)
-  const tracking = responses.trackingMethods || [];
+  const tracking = Array.isArray(responses.trackingMethods) ? responses.trackingMethods : [];
   if (tracking.includes("온라인 예약")) {
     strengths.push("체계적인 전환 추적");
   }

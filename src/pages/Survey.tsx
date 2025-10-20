@@ -140,10 +140,10 @@ const Survey = () => {
       setCurrentStep(currentStep + 1);
     } else {
       // 설문 완료 - localStorage에 저장 후 결과 페이지로 이동
-      const surveyId = `survey_${Date.now()}`;
-      localStorage.setItem(`survey_temp-id`, JSON.stringify(responses));
+      const surveyId = `${Date.now()}`;
+      localStorage.setItem(`survey_${surveyId}`, JSON.stringify(responses));
       console.log("Survey responses:", responses);
-      navigate("/results/temp-id");
+      navigate(`/results/${surveyId}`);
     }
   };
 

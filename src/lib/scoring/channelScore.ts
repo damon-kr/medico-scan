@@ -33,7 +33,8 @@ export function calculateChannelScore(responses: SurveyResponse): number {
  * 채널 수 평가 (10점)
  */
 function calculateChannelCountScore(responses: SurveyResponse): number {
-  const channels = responses.channels || [];
+  const channelsData = responses.channels;
+  const channels = channelsData?.selected || [];
   const channelCount = channels.length;
 
   // 기본 점수
@@ -68,7 +69,8 @@ function calculateChannelCountScore(responses: SurveyResponse): number {
  * 채널 다양성 평가 (10점)
  */
 function calculateChannelDiversityScore(responses: SurveyResponse): number {
-  const channels = responses.channels || [];
+  const channelsData = responses.channels;
+  const channels = channelsData?.selected || [];
   
   let score = 0;
   const channelTypes = {
@@ -137,20 +139,21 @@ function calculatePlatformScore(responses: SurveyResponse): number {
 
 /**
  * 채널 집중도 점수 (10점) - 피부과/성형외과 외
+ * 1순위 채널의 비중을 기반으로 평가
  */
 function calculateChannelFocusScore(responses: SurveyResponse): number {
-  const channelRatio = responses.channelRatio;
+  const top1Ratio = responses.top1Ratio;
   
-  if (!channelRatio) return 5; // 기본 점수
+  if (!top1Ratio) return 5; // 기본 점수
 
   const scoreMap: Record<string, number> = {
-    "1개 집중": 8,
-    "2-3개 분산": 10,
-    "4개 이상 분산": 6,
-    "골고루": 4,
+    "30% 미만": 10,      // 가장 분산
+    "30-50%": 8,         // 적당히 분산
+    "50-70%": 6,         // 집중적
+    "70% 이상": 4,       // 과도한 집중
   };
 
-  return scoreMap[channelRatio] || 5;
+  return scoreMap[top1Ratio] || 5;
 }
 
 /**
