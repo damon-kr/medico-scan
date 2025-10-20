@@ -143,13 +143,13 @@ export function detectScatteredEfforts(responses: SurveyResponse): boolean {
  * - SNS 플랫폼을 안 하거나 소극적
  */
 export function detectOnlinePassive(responses: SurveyResponse): boolean {
-  const specialties = responses.specialties || [];
+  const specialtiesArray = responses.specialties?.selected || [];
   const platform = responses.platformUsage;
   const negativeStatus = responses.onlineStatusNegative || [];
 
   // 피부과/성형외과만 해당
   if (
-    !specialties.includes("피부과/성형외과")
+    !specialtiesArray.includes("피부과/성형외과")
   ) {
     return false;
   }
