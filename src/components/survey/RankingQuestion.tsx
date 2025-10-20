@@ -28,14 +28,34 @@ export const RankingQuestion = ({ question, value, onChange }: RankingQuestionPr
   );
 
   const handleToggle = (optionValue: string) => {
-    const newSelected = selected.includes(optionValue)
+    const isCurrentlySelected = selected.includes(optionValue);
+    const newSelected = isCurrentlySelected
       ? selected.filter((v) => v !== optionValue)
       : [...selected, optionValue];
 
-    // Remove ranking if unchecked
     const newRanking = { ...ranking };
-    if (!newSelected.includes(optionValue)) {
+    
+    if (isCurrentlySelected) {
+      // 체크 해제: 순위 제거
       delete newRanking[optionValue];
+    } else {
+      // 새로운 항목 체크: 비어있는 가장 앞선 순위로 자동 지정
+      const usedRanks = Object.values(newRanking);
+      const newMaxRank = Math.min(
+        question.validation?.max || newSelected.length,
+        newSelected.length
+      );
+      
+      // 1부터 maxRank까지 중 사용되지 않은 가장 작은 순위 찾기
+      let assignedRank = 1;
+      for (let rank = 1; rank <= newMaxRank; rank++) {
+        if (!usedRanks.includes(rank)) {
+          assignedRank = rank;
+          break;
+        }
+      }
+      
+      newRanking[optionValue] = assignedRank;
     }
 
     onChange({ selected: newSelected, ranking: newRanking });

@@ -112,6 +112,19 @@ const Survey = () => {
           });
           return false;
         }
+        
+        // 선택된 모든 항목에 순위가 지정되었는지 확인
+        const hasIncompleteRanking = rankingValue.selected.some(
+          (item) => !rankingValue.ranking || !rankingValue.ranking[item]
+        );
+        if (hasIncompleteRanking) {
+          toast({
+            title: "순위를 선택해 주세요",
+            description: "선택한 모든 항목에 순위를 지정해주세요.",
+            variant: "destructive",
+          });
+          return false;
+        }
       }
     }
 
