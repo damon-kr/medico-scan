@@ -5,7 +5,10 @@
       "Bash(powershell:*)",
       "Bash(taskkill:*)",
       "Bash(npm run dev:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(npm i:*)",
+      "Read(//Users/kimyumin/Desktop/project/**)",
+      "Bash(wc -l /Users/kimyumin/Desktop/project/hospital survey/medico-scan/src/**/*.{ts,tsx})"
     ],
     "deny": [],
     "ask": []
