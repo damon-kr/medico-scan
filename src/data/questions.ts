@@ -48,7 +48,7 @@ export const questions: Question[] = [
     section: "basic",
     order: 2,
     title: "주요 진료 분야를 선택해주세요",
-    description: "1순위와 2순위를 순서대로 선택해주세요 (2순위는 선택사항)",
+    description: "1순위와 2순위를 순서대로 선택해주세요 (최대 2순위까지 선택 가능)",
     type: "ranking",
     validation: { required: true, min: 1, max: 2 },
     options: [
