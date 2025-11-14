@@ -17,6 +17,7 @@ const Results = () => {
   const [result, setResult] = useState<Partial<SurveyResult> | null>(null);
   const [responses, setResponses] = useState<SurveyResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showNudgeBanner, setShowNudgeBanner] = useState(false);
 
   useEffect(() => {
     // localStorage에서 설문 응답 불러오기
@@ -54,6 +55,12 @@ const Results = () => {
       setResult(fullResult);
       setResponses(parsedResponses);
       setLoading(false);
+      setShowNudgeBanner(true);
+      
+      // 2초 후 넛징 배너 숨기기
+      setTimeout(() => {
+        setShowNudgeBanner(false);
+      }, 2000);
     } catch (error) {
       console.error("결과 생성 오류:", error);
       navigate("/");
@@ -67,6 +74,28 @@ const Results = () => {
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-xl text-muted-foreground">결과를 분석하고 있습니다...</p>
         </div>
+      </div>
+    );
+  }
+
+  // 넛징 배너 표시
+  if (showNudgeBanner) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <Card className="max-w-2xl mx-4 p-8 animate-fade-in">
+          <div className="text-center space-y-6">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-foreground">
+                AI가 응답 내용을 분석하고 있어요
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                상담 신청을 요청하면 응답을 토대로<br />
+                컨설팅 제안을 받을 수 있어요
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
     );
   }
