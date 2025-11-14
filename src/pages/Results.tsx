@@ -8,11 +8,14 @@ import { calculateTotalScore } from "@/lib/scoring/scoreCalculator";
 import { diagnoseSurvey } from "@/lib/diagnosis/diagnosisEngine";
 import { generateSolutions } from "@/lib/solutions/actionGenerator";
 import { simulateROI } from "@/lib/solutions/roiSimulator";
+import { CompetitionSection } from "@/components/results/CompetitionSection";
+import { ChecklistSection } from "@/components/results/ChecklistSection";
 
 const Results = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [result, setResult] = useState<Partial<SurveyResult> | null>(null);
+  const [responses, setResponses] = useState<SurveyResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,20 +29,20 @@ const Results = () => {
     }
 
     try {
-      const responses: SurveyResponse = JSON.parse(storedResponses);
-      
+      const parsedResponses: SurveyResponse = JSON.parse(storedResponses);
+
       // 1. 스코어링
-      const scores = calculateTotalScore(responses);
-      
+      const scores = calculateTotalScore(parsedResponses);
+
       // 2. 진단
-      const diagnosis = diagnoseSurvey(responses, scores);
-      
+      const diagnosis = diagnoseSurvey(parsedResponses, scores);
+
       // 3. 솔루션 생성
-      const solutions = generateSolutions(diagnosis, responses);
-      
+      const solutions = generateSolutions(diagnosis, parsedResponses);
+
       // 4. ROI 시뮬레이션
-      const roi = simulateROI(scores.totalScore, responses);
-      
+      const roi = simulateROI(scores.totalScore, parsedResponses);
+
       // 결과 통합
       const fullResult: Partial<SurveyResult> = {
         ...diagnosis,
@@ -47,8 +50,9 @@ const Results = () => {
         surveyId: id || "",
         createdAt: new Date().toISOString(),
       };
-      
+
       setResult(fullResult);
+      setResponses(parsedResponses);
       setLoading(false);
     } catch (error) {
       console.error("결과 생성 오류:", error);
@@ -86,6 +90,11 @@ const Results = () => {
       performance_blind: "성과 맹목형",
       scattered_efforts: "무분별 살포형",
       online_passive: "온라인 마케팅 소극형",
+      content_marketing_neglect: "콘텐츠 마케팅 미활용형",
+      search_ranking_optimization: "검색 랭킹 최적화 필요형",
+      platform_expansion_needed: "플랫폼 확장 필요형",
+      local_marketing_weak: "지역 밀착 마케팅 부족형",
+      budget_efficiency_low: "예산 대비 효율 저하형",
       general: "일반형",
     };
     return issue ? issueMap[issue] : "분석 중";
@@ -94,12 +103,17 @@ const Results = () => {
   const getIssueDescription = (issue?: string) => {
     const descMap: Record<string, string> = {
       single_tool: "1-2개 채널에만 집중하여 리스크가 높습니다. 채널 다각화가 시급합니다.",
-      naver_dependent: "전체 마케팅의 70% 이상이 네이버에 집중되어 있어 알고리즘 변화에 취약합니다.",
+      naver_dependent: "전체 마케팅의 80% 이상이 네이버에 집중되어 있어 알고리즘 변화에 취약합니다.",
       digital_blind_spot: "온라인 채널 활용이 매우 부족합니다. 디지털 전환이 필요합니다.",
       neglected_operation: "마케팅 채널은 있지만 관리가 제대로 되지 않고 있습니다.",
       performance_blind: "마케팅 효과를 측정하지 못해 개선 방향을 찾기 어렵습니다.",
       scattered_efforts: "너무 많은 채널을 동시에 운영하여 효율이 떨어집니다.",
       online_passive: "온라인 마케팅에 소극적이어서 기회를 놓치고 있습니다.",
+      content_marketing_neglect: "유튜브와 인스타그램 등 콘텐츠 마케팅이 부족합니다. 전문성과 신뢰를 보여주는 영상 콘텐츠가 필요합니다.",
+      search_ranking_optimization: "경쟁이 치열한 환경에서 검색 노출 순위가 낮습니다. 1페이지 진입은 쉽지 않지만, 목표로 삼고 체계적인 SEO 전략을 수립하세요.",
+      platform_expansion_needed: "미용 시장에서 상업적 플랫폼 활용이 부족합니다. 강남언니, 모두닥 등에서 테스트를 시작하세요.",
+      local_marketing_weak: "지역 기반 마케팅이 미흡합니다. 동네 환자 확보를 위해 지도 검색 최적화가 필요합니다.",
+      budget_efficiency_low: "예산은 충분하지만 성과 측정이나 채널 분산이 부족합니다. 예산을 효율적으로 활용하세요.",
       general: "전반적인 마케팅 체계 개선이 필요합니다.",
     };
     return issue ? descMap[issue] : "";
@@ -189,6 +203,14 @@ const Results = () => {
               )}
             </div>
           </Card>
+
+          {/* Competition & Ranking Section */}
+          {responses && (
+            <>
+              <CompetitionSection responses={responses} />
+              <ChecklistSection responses={responses} />
+            </>
+          )}
 
           {/* Solutions Card */}
           <Card className="p-8 mb-8">

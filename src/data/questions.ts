@@ -58,6 +58,7 @@ export const questions: Question[] = [
       { value: "내과", label: "내과/가정의학과 (일반 진료)", emoji: "🏥" },
       { value: "산부인과", label: "산부인과/소아청소년과", emoji: "👶" },
       { value: "안과", label: "안과/이비인후과", emoji: "👁️" },
+      { value: "비뇨기과", label: "비뇨기과", emoji: "🔬" },
       { value: "정신건강의학과", label: "정신건강의학과/신경과", emoji: "🧠" },
       { value: "기타", label: "기타 전문 진료과", emoji: "🏥" },
     ],
@@ -354,6 +355,42 @@ export const questions: Question[] = [
       { value: "50-100만원", label: "50-100만원", emoji: "💎" },
       { value: "50만원 미만", label: "50만원 미만", emoji: "💎" },
       { value: "모르겠음", label: "측정해본 적 없음/모르겠음", emoji: "❓" },
+    ],
+  },
+
+  // Q13: 경쟁 병원 수
+  {
+    id: "competition_count",
+    section: "measurement",
+    order: 13,
+    title: "우리 동네(도보 10분 이내)에 같은 진료과 경쟁 병원이 대략 몇 개 있나요?",
+    description: "정확하지 않아도 괜찮습니다. 대략적으로 선택해주세요",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "거의 없음", label: "거의 없음 (0-2개)", emoji: "😊" },
+      { value: "보통", label: "보통 (3-5개)", emoji: "😐" },
+      { value: "많음", label: "많음 (6-10개)", emoji: "😰" },
+      { value: "매우 많음", label: "매우 많음 (10개 이상)", emoji: "😱" },
+      { value: "모르겠음", label: "잘 모르겠음", emoji: "❓" },
+    ],
+  },
+
+  // Q14: 네이버 지도 검색 순위
+  {
+    id: "naver_map_ranking",
+    section: "measurement",
+    order: 14,
+    title: "네이버 지도에서 '지역명 + 진료과'로 검색했을 때 우리 병원은?",
+    description: "예: 강남 피부과, 분당 치과 등으로 검색",
+    type: "radio",
+    validation: { required: true },
+    options: [
+      { value: "최상위", label: "1-5위 (최상위)", emoji: "🥇" },
+      { value: "1페이지", label: "1페이지 내 표시됨", emoji: "👍" },
+      { value: "2페이지", label: "2페이지에 있음", emoji: "😐" },
+      { value: "3페이지 이후", label: "3페이지 이후 또는 찾기 어려움", emoji: "😞" },
+      { value: "확인 안함", label: "확인해본 적 없음", emoji: "❓" },
     ],
   },
 ];

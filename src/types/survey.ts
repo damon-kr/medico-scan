@@ -51,6 +51,12 @@ export interface SurveyResponse {
   // Q10: 가장 큰 문제 (최대 2개)
   mainProblems?: string[];
 
+  // Q13: 경쟁 병원 수
+  competition_count?: string;
+
+  // Q14: 네이버 지도 검색 순위
+  naver_map_ranking?: string;
+
   // 추가 질문들 (미래 확장용)
   decisionMaking?: string;
   patientLifetimeValue?: string;
@@ -108,14 +114,19 @@ export interface SurveyResult {
 }
 
 export type IssueType =
-  | "naver_dependent"      // 네이버 의존 과다형
-  | "digital_blind_spot"   // 디지털 사각지대형
-  | "scattered_efforts"    // 무분별 살포형
-  | "neglected_operation"  // 방치 운영형
-  | "performance_blind"    // 성과 맹목형
-  | "online_passive"       // 온라인 마케팅 소극형
-  | "single_tool"          // 원툴형
-  | "general";             // 일반형
+  | "naver_dependent"              // 네이버 의존 과다형
+  | "digital_blind_spot"           // 디지털 사각지대형
+  | "scattered_efforts"            // 무분별 살포형
+  | "neglected_operation"          // 방치 운영형
+  | "performance_blind"            // 성과 맹목형
+  | "online_passive"               // 온라인 마케팅 소극형
+  | "single_tool"                  // 원툴형
+  | "content_marketing_neglect"    // 콘텐츠 마케팅 미활용형 (2025-01-14 추가)
+  | "search_ranking_optimization"  // 검색 랭킹 최적화 필요형 (2025-01-14 추가)
+  | "platform_expansion_needed"    // 플랫폼 확장 필요형 (2025-01-14 추가)
+  | "local_marketing_weak"         // 지역 밀착 마케팅 부족형 (2025-01-14 추가)
+  | "budget_efficiency_low"        // 예산 대비 효율 저하형 (2025-01-14 추가)
+  | "general";                     // 일반형
 
 export interface Action {
   title: string;

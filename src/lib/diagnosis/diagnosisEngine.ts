@@ -8,6 +8,11 @@ import {
   detectPerformanceBlindness,
   detectScatteredEfforts,
   detectOnlinePassive,
+  detectContentMarketingNeglect,
+  detectSearchRankingOptimization,
+  detectPlatformExpansionNeeded,
+  detectLocalMarketingWeak,
+  detectBudgetEfficiencyLow,
 } from "./issueDetectors";
 
 /**
@@ -53,6 +58,7 @@ function determinePrimaryIssue(
   const issues: Array<{ type: IssueType; weight: number }> = [];
 
   // 각 패턴 감지 및 가중치 부여
+  // 기존 진단 유형
   if (detectOneTrickPattern(responses)) {
     issues.push({ type: "single_tool", weight: 0.95 });
   }
@@ -75,11 +81,28 @@ function determinePrimaryIssue(
     issues.push({ type: "online_passive", weight: 0.65 });
   }
 
+  // 새로운 진단 유형 (2025-01-14 추가)
+  if (detectBudgetEfficiencyLow(responses)) {
+    issues.push({ type: "budget_efficiency_low", weight: 0.88 });
+  }
+  if (detectSearchRankingOptimization(responses)) {
+    issues.push({ type: "search_ranking_optimization", weight: 0.83 });
+  }
+  if (detectContentMarketingNeglect(responses)) {
+    issues.push({ type: "content_marketing_neglect", weight: 0.78 });
+  }
+  if (detectPlatformExpansionNeeded(responses)) {
+    issues.push({ type: "platform_expansion_needed", weight: 0.73 });
+  }
+  if (detectLocalMarketingWeak(responses)) {
+    issues.push({ type: "local_marketing_weak", weight: 0.68 });
+  }
+
   // 가중치가 가장 높은 문제 반환
   const primary = issues.sort((a, b) => b.weight - a.weight)[0];
-  
+
   // 아무 문제도 감지되지 않으면 기본값
-  return primary?.type || "naver_dependent";
+  return primary?.type || "general";
 }
 
 /**

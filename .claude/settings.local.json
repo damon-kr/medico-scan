@@ -8,7 +8,9 @@
       "Bash(npm install)",
       "Bash(npm i:*)",
       "Read(//Users/kimyumin/Desktop/project/**)",
-      "Bash(wc -l /Users/kimyumin/Desktop/project/hospital survey/medico-scan/src/**/*.{ts,tsx})"
+      "Bash(wc -l /Users/kimyumin/Desktop/project/hospital survey/medico-scan/src/**/*.{ts,tsx})",
+      "Bash(npx tsc:*)",
+      "Bash(npx tsc --noEmit 2>&1 | head -50)"
     ],
     "deny": [],
     "ask": []

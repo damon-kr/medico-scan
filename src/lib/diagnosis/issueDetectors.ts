@@ -21,21 +21,24 @@ export function detectOneTrickPattern(responses: SurveyResponse): boolean {
 
 /**
  * 네이버 의존형 (Naver Dependent Type)
- * - 네이버 채널 비중이 70% 이상
+ * - 네이버 채널 비중이 80% 이상 (2025-01-14 기준 강화)
  */
 export function detectNaverDependency(responses: SurveyResponse): boolean {
   const channelsData = responses.channels;
   const channels = channelsData?.selected || [];
   const top1Ratio = responses.top1Ratio;
 
-  // 조건 1: 네이버 채널 비중 70% 이상
+  // 네이버 관련 채널 카운트 (플레이스, 블로그, 검색광고)
   const naverChannels = channels.filter((c) => c.includes("네이버")).length;
   const totalChannels = channels.length;
-  
-  if (totalChannels > 0 && naverChannels / totalChannels >= 0.7) return true;
 
-  // 조건 2: "70% 이상" 선택 + 네이버 포함
-  if (top1Ratio === "70% 이상" && naverChannels > 0) return true;
+  // 조건 1: 네이버 채널 비중 80% 이상
+  if (totalChannels > 0 && naverChannels / totalChannels >= 0.8) return true;
+
+  // 조건 2: "70% 이상" 선택 + 네이버 채널만 3개 사용 (플레이스+블로그+검색광고)
+  if (top1Ratio === "70% 이상" && naverChannels >= 3 && totalChannels === naverChannels) {
+    return true;
+  }
 
   return false;
 }
@@ -168,4 +171,145 @@ export function detectOnlinePassive(responses: SurveyResponse): boolean {
   }
 
   return false;
+}
+
+/**
+ * 콘텐츠 마케팅 미활용형 (Content Marketing Neglect Type)
+ * - 유튜브/인스타그램 미활용 (피부과/성형외과/비뇨기과/정신과 특화)
+ * - 신뢰와 후기가 중요한 업종에서 콘텐츠 마케팅 부족
+ */
+export function detectContentMarketingNeglect(responses: SurveyResponse): boolean {
+  const specialtiesArray = responses.specialties?.selected || [];
+  const channelsData = responses.channels;
+  const channels = channelsData?.selected || [];
+  const updateFrequency = responses.updateFrequency;
+
+  // 대상 업종: 피부과/성형외과, 비뇨기과, 정신과
+  const targetSpecialties = ["피부과/성형외과", "비뇨기과", "정신과"];
+  const isTargetSpecialty = specialtiesArray.some(s => targetSpecialties.includes(s));
+
+  if (!isTargetSpecialty) return false;
+
+  // 조건 1: 유튜브와 인스타그램 둘 다 미사용
+  const hasYoutube = channels.some(c => c.includes("유튜브"));
+  const hasInstagram = channels.some(c => c.includes("인스타그램"));
+
+  if (!hasYoutube && !hasInstagram) return true;
+
+  // 조건 2: 유튜브 OR 인스타그램은 있지만 업데이트 월 1회 이하
+  if (
+    (hasYoutube || hasInstagram) &&
+    (updateFrequency === "월 1회 이하" || updateFrequency === "거의 안함")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * 검색 랭킹 최적화 필요형 (Search Ranking Optimization Type)
+ * - 경쟁 치열 + 네이버 지도 검색 순위 낮음 (정형외과/내과/치과 특화)
+ */
+export function detectSearchRankingOptimization(responses: SurveyResponse): boolean {
+  const specialtiesArray = responses.specialties?.selected || [];
+  const competitionCount = responses.competition_count;
+  const naverMapRanking = responses.naver_map_ranking;
+
+  // 대상 업종: 정형외과, 내과/가정의학과, 치과
+  const targetSpecialties = ["정형외과", "내과/가정의학과", "치과"];
+  const isTargetSpecialty = specialtiesArray.some(s => targetSpecialties.includes(s));
+
+  if (!isTargetSpecialty) return false;
+
+  // 조건: 경쟁 치열 + 검색 순위 낮음
+  const isHighCompetition = competitionCount === "많음" || competitionCount === "매우 많음";
+  const isLowRanking = naverMapRanking === "2페이지" || naverMapRanking === "3페이지 이후";
+
+  return isHighCompetition && isLowRanking;
+}
+
+/**
+ * 플랫폼 확장 필요형 (Platform Expansion Needed Type)
+ * - 피부과/성형외과 + 강남/광역시 + 상업적 플랫폼 미활용
+ */
+export function detectPlatformExpansionNeeded(responses: SurveyResponse): boolean {
+  const specialtiesArray = responses.specialties?.selected || [];
+  const location = responses.location_and_size?.location || "";
+  const commercialPlatform = responses.commercialPlatform;
+
+  // 조건 1: 피부과/성형외과만 해당
+  if (!specialtiesArray.includes("피부과/성형외과")) return false;
+
+  // 조건 2: 강남 OR 광역시
+  const isHighCompetitionArea =
+    location.includes("강남") ||
+    location.includes("광역시");
+
+  if (!isHighCompetitionArea) return false;
+
+  // 조건 3: 상업적 플랫폼 관심 없음
+  return commercialPlatform === "관심 없음";
+}
+
+/**
+ * 지역 밀착 마케팅 부족형 (Local Marketing Weak Type)
+ * - 소아과/내과/안과/이비인후과 + 로컬 SEO 미흡
+ */
+export function detectLocalMarketingWeak(responses: SurveyResponse): boolean {
+  const specialtiesArray = responses.specialties?.selected || [];
+  const location = responses.location_and_size?.location || "";
+  const channelsData = responses.channels;
+  const channels = channelsData?.selected || [];
+  const naverMapRanking = responses.naver_map_ranking;
+
+  // 대상 업종: 소아과, 내과/가정의학과, 안과, 이비인후과
+  const targetSpecialties = ["소아과", "내과/가정의학과", "안과", "이비인후과"];
+  const isTargetSpecialty = specialtiesArray.some(s => targetSpecialties.includes(s));
+
+  // 대상 지역: 비강남, 지방
+  const isTargetLocation =
+    !location.includes("강남") ||
+    location.includes("경기") ||
+    location.includes("그 외");
+
+  // 업종 또는 지역 조건 충족 필요
+  if (!isTargetSpecialty && !isTargetLocation) return false;
+
+  // 조건 1: GBP 또는 네이버 플레이스 미사용
+  const hasGBP = channels.some(c => c.includes("구글") && c.includes("비즈니스"));
+  const hasNaverPlace = channels.some(c => c.includes("네이버") && c.includes("플레이스"));
+
+  if (!hasGBP || !hasNaverPlace) return true;
+
+  // 조건 2: 네이버 지도 순위 확인 안함
+  if (naverMapRanking === "확인 안함") return true;
+
+  return false;
+}
+
+/**
+ * 예산 대비 효율 저하형 (Budget Efficiency Low Type)
+ * - 예산 500만원 이상 + 추적 미흡 OR 채널 집중도 과다
+ */
+export function detectBudgetEfficiencyLow(responses: SurveyResponse): boolean {
+  const budget = responses.budget;
+  const tracking = Array.isArray(responses.trackingMethods) ? responses.trackingMethods : [];
+  const top1Ratio = responses.top1Ratio;
+
+  // 조건 1: 예산 500만원 이상
+  const isHighBudget =
+    budget === "500-1,000만원" ||
+    budget === "1,000-2,000만원" ||
+    budget === "2,000만원 이상";
+
+  if (!isHighBudget) return false;
+
+  // 조건 2: 추적 방법 1개 이하
+  const hasWeakTracking = tracking.length <= 1;
+
+  // 조건 3: 채널 집중도 70% 이상
+  const isOverConcentrated = top1Ratio === "70% 이상";
+
+  return hasWeakTracking || isOverConcentrated;
 }

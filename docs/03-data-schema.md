@@ -79,7 +79,13 @@ CREATE TABLE surveys (
   
   -- Q10: 가장 큰 문제 (최대 2개)
   main_problems TEXT[] NOT NULL,
-  
+
+  -- Q13: 경쟁 병원 수
+  competition_count TEXT,
+
+  -- Q14: 네이버 지도 검색 순위
+  naver_map_ranking TEXT,
+
   -- 완료 상태
   completed BOOLEAN DEFAULT false,
   completed_at TIMESTAMP WITH TIME ZONE
@@ -297,6 +303,8 @@ VALUES
 | 운영 관리 | Q6 | 콘텐츠 업데이트 주기 | radio | ✅ |
 | 성과 측정 | Q9 | 온라인 현황 | checkbox | ✅ |
 | 개선 니즈 | Q10 | 가장 큰 문제 (최대 2개) | checkbox | ✅ |
+| 성과 측정 | Q13 | 경쟁 병원 수 | radio | ✅ |
+| 성과 측정 | Q14 | 네이버 지도 검색 순위 | radio | ✅ |
 
 ---
 
@@ -720,6 +728,65 @@ VALUES
 
 ---
 
+### 3.15 Q13: 경쟁 병원 수
+
+**추가 날짜**: 2025-01-14
+**목적**: 시장 경쟁 환경 평가 (경쟁도 측정)
+
+```typescript
+{
+  id: 'competition_count',
+  section: 'measurement',
+  order: 13,
+  title: '우리 동네(도보 10분 이내)에 같은 진료과 경쟁 병원이 대략 몇 개 있나요?',
+  description: '정확하지 않아도 괜찮습니다. 대략적으로 선택해주세요',
+  type: 'radio',
+  validation: { required: true },
+  options: [
+    { value: '거의 없음', label: '거의 없음 (0-2개)', emoji: '😊' },
+    { value: '보통', label: '보통 (3-5개)', emoji: '😐' },
+    { value: '많음', label: '많음 (6-10개)', emoji: '😰' },
+    { value: '매우 많음', label: '매우 많음 (10개 이상)', emoji: '😱' },
+    { value: '모르겠음', label: '잘 모르겠음', emoji: '❓' },
+  ],
+}
+```
+
+**중요**: 이 질문의 데이터는 "시장 경쟁 환경" 평가에만 사용되며, Q14의 "검색 노출 순위"와는 별도로 처리됩니다.
+
+---
+
+### 3.16 Q14: 네이버 지도 검색 순위
+
+**추가 날짜**: 2025-01-14
+**목적**: 병원의 검색 노출 성과 평가
+
+```typescript
+{
+  id: 'naver_map_ranking',
+  section: 'measurement',
+  order: 14,
+  title: '네이버 지도에서 \'지역명 + 진료과\'로 검색했을 때 우리 병원은?',
+  description: '예: 강남 피부과, 분당 치과 등으로 검색',
+  type: 'radio',
+  validation: { required: true },
+  options: [
+    { value: '최상위', label: '1-5위 (최상위)', emoji: '🥇' },
+    { value: '1페이지', label: '1페이지 내 표시됨', emoji: '👍' },
+    { value: '2페이지', label: '2페이지에 있음', emoji: '😐' },
+    { value: '3페이지 이후', label: '3페이지 이후 또는 찾기 어려움', emoji: '😞' },
+    { value: '확인 안함', label: '확인해본 적 없음', emoji: '❓' },
+  ],
+}
+```
+
+**우선순위 로직**:
+- **시급**: 경쟁도 "많음/매우 많음" AND 순위 "2페이지/3페이지 이후"
+- **개선권장**: 경쟁도 높음 OR 순위 낮음 (둘 중 하나만)
+- **유지**: 둘 다 양호
+
+---
+
 ## 4. TypeScript 타입 정의
 
 ### 4.1 Survey 관련 타입
@@ -777,7 +844,13 @@ export interface SurveyResponse {
   
   // Q10: 가장 큰 문제 (최대 2개)
   mainProblems?: string[];
-  
+
+  // Q13: 경쟁 병원 수 (2025-01-14 추가)
+  competition_count?: string;
+
+  // Q14: 네이버 지도 검색 순위 (2025-01-14 추가)
+  naver_map_ranking?: string;
+
   // 추가 질문들 (미래 확장용)
   decisionMaking?: string;
   patientLifetimeValue?: string;
@@ -923,4 +996,5 @@ export interface QuestionField {
 
 | 날짜 | 변경 내용 | 작성자 |
 |------|-----------|--------|
+| 2025-01-14 | Q13(경쟁 병원 수), Q14(네이버 지도 순위) 추가, 경쟁도/노출 평가 로직 추가, 39개 체크리스트 시스템 추가 | Claude Code |
 | 2025-01-XX | 초기 문서 작성 (3-Layer 구조 전환) | - |
