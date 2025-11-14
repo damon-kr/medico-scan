@@ -201,6 +201,35 @@ const Results = () => {
             <h2 className="text-2xl font-bold mb-6">진단 결과</h2>
             
             <div className="space-y-6">
+              {/* 점수 요약 */}
+              {result.scoreSummary && (
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-foreground">점수 산출 근거</h3>
+                  
+                  {/* 주요 영향 요인 */}
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {result.scoreSummary.primaryFactors.map((factor, idx) => (
+                      <Card key={idx} className="p-4 bg-muted/30 border-primary/20">
+                        <div className="flex items-start gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-sm font-bold text-primary">{idx + 1}</span>
+                          </div>
+                          <p className="text-sm text-foreground">{factor}</p>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  {/* 점수 해석 */}
+                  <Card className="p-5 bg-primary/5 border-primary/30">
+                    <h4 className="font-semibold mb-2 text-primary">이 점수의 의미</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {result.scoreSummary.interpretation}
+                    </p>
+                  </Card>
+                </div>
+              )}
+
               {/* 주요 문제 */}
               <div className="p-6 bg-destructive/5 border border-destructive/20 rounded-lg">
                 <div className="flex items-start gap-3">
