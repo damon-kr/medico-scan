@@ -201,48 +201,48 @@ const Results = () => {
             <h2 className="text-2xl font-bold mb-6">진단 결과</h2>
             
             <div className="space-y-6">
-              {/* 점수 요약 */}
-              {result.scoreSummary && (
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-foreground">점수 산출 근거</h3>
-                  
-                  {/* 주요 영향 요인 */}
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {result.scoreSummary.primaryFactors.map((factor, idx) => (
-                      <Card key={idx} className="p-4 bg-muted/30 border-primary/20">
-                        <div className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-sm font-bold text-primary">{idx + 1}</span>
-                          </div>
-                          <p className="text-sm text-foreground">{factor}</p>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  {/* 점수 해석 */}
-                  <Card className="p-5 bg-primary/5 border-primary/30">
-                    <h4 className="font-semibold mb-2 text-primary">이 점수의 의미</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {result.scoreSummary.interpretation}
-                    </p>
-                  </Card>
-                </div>
-              )}
-
               {/* 주요 문제 */}
               <div className="p-6 bg-destructive/5 border border-destructive/20 rounded-lg">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 mb-4">
                   <AlertCircle className="w-6 h-6 text-destructive mt-1 flex-shrink-0" />
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-semibold mb-2 text-destructive">
                       주요 문제: {getIssueTitle(result.primaryIssue)}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mb-4">
                       {getIssueDescription(result.primaryIssue)}
                     </p>
                   </div>
                 </div>
+
+                {/* 산출 근거 */}
+                {result.scoreSummary && (
+                  <div className="space-y-4 border-t border-destructive/10 pt-4">
+                    <h4 className="text-lg font-semibold text-foreground">점수 산출 근거</h4>
+                    
+                    {/* 주요 영향 요인 */}
+                    <div className="grid md:grid-cols-3 gap-3">
+                      {result.scoreSummary.primaryFactors.map((factor, idx) => (
+                        <Card key={idx} className="p-3 bg-background/60 border-muted">
+                          <div className="flex items-start gap-2">
+                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-sm font-bold text-primary">{idx + 1}</span>
+                            </div>
+                            <p className="text-sm text-foreground">{factor}</p>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    {/* 점수 해석 */}
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                      <h5 className="text-sm font-semibold mb-2 text-primary">이 점수의 의미</h5>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {result.scoreSummary.interpretation}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 강점 영역 */}
