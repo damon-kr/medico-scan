@@ -93,6 +93,12 @@ export interface SurveyResult {
   // 강점 영역
   strengths: string[];
 
+  // 점수 요약
+  scoreSummary?: {
+    primaryFactors: string[];  // 점수에 가장 큰 영향을 준 요인들
+    interpretation: string;     // 이 점수가 의미하는 것
+  };
+
   // 비교 분석
   industryAvgScore?: number;
   percentile?: number;

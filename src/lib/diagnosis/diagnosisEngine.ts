@@ -31,13 +31,17 @@ export function diagnoseSurvey(
   // 3. 강점 영역 발견
   const strengths = identifyStrengths(responses, scores);
 
-  // 4. 시장 특성 매칭 (추후 구현)
+  // 4. 점수 요약 생성
+  const scoreSummary = generateScoreSummary(responses, scores);
+
+  // 5. 시장 특성 매칭 (추후 구현)
   // const marketCharacteristics = getMarketCharacteristics(responses);
 
   return {
     primaryIssue: primaryIssue,
     secondaryIssues: [],
     strengths,
+    scoreSummary,
     totalScore: scores.totalScore,
     level: scores.level,
     channelScore: scores.categoryScores.channel,
@@ -239,4 +243,85 @@ function identifyStrengths(
 
   // 중복 제거 및 상위 5개만 반환
   return [...new Set(strengths)].slice(0, 5);
+}
+
+/**
+ * 점수 요약 생성
+ * 왜 이 점수가 나왔는지, 가장 큰 영향을 끼친 항목과 의미 설명
+ */
+function generateScoreSummary(
+  responses: SurveyResponse,
+  scores: ScoreResult
+): {
+  primaryFactors: string[];
+  interpretation: string;
+} {
+  const primaryFactors: string[] = [];
+  const totalScore = scores.totalScore;
+
+  // 1. 채널 점수 영향 분석
+  const channelScore = scores.categoryScores.channel;
+  const channels = Array.isArray(responses.channels?.selected) 
+    ? responses.channels.selected 
+    : [];
+  
+  if (channelScore >= 20) {
+    primaryFactors.push(`다양한 채널 활용 (${channels.length}개 채널) - 안정적인 환자 유입 구조`);
+  } else if (channelScore >= 15) {
+    primaryFactors.push(`기본적인 채널 활용 (${channels.length}개 채널) - 추가 확장 필요`);
+  } else {
+    primaryFactors.push(`제한적인 채널 활용 (${channels.length}개 채널) - 리스크가 높은 구조`);
+  }
+
+  // 2. 운영 점수 영향 분석
+  const operationScore = scores.categoryScores.operation;
+  if (operationScore >= 15) {
+    primaryFactors.push(`체계적인 운영 관리 - ${responses.updateFrequency || '정기적 업데이트'}`);
+  } else if (operationScore >= 10) {
+    primaryFactors.push(`기본적인 운영 관리 - 개선의 여지 있음`);
+  } else {
+    primaryFactors.push(`미흡한 운영 관리 - 콘텐츠 방치 위험`);
+  }
+
+  // 3. 측정 점수 영향 분석
+  const measurementScore = scores.categoryScores.measurement;
+  const tracking = Array.isArray(responses.trackingMethods) 
+    ? responses.trackingMethods 
+    : [];
+  
+  if (measurementScore >= 20) {
+    primaryFactors.push(`체계적인 성과 측정 (${tracking.length}개 지표) - 데이터 기반 의사결정 가능`);
+  } else if (measurementScore >= 10) {
+    primaryFactors.push(`기본적인 성과 측정 - 개선 지표 보완 필요`);
+  } else {
+    primaryFactors.push(`성과 측정 미흡 - 마케팅 효과 파악 불가`);
+  }
+
+  // 4. 예산 점수 영향 분석
+  const budgetScore = scores.categoryScores.budget;
+  if (budgetScore >= 15) {
+    primaryFactors.push(`충분한 마케팅 예산 - ${responses.budget || '적극적 투자'}`);
+  } else if (budgetScore >= 10) {
+    primaryFactors.push(`적정 수준의 예산 - 효율적 집행 필요`);
+  } else {
+    primaryFactors.push(`제한적인 예산 - 선택과 집중 전략 필요`);
+  }
+
+  // 5. 점수 해석
+  let interpretation = "";
+  if (totalScore >= 70) {
+    interpretation = "우리 병원은 체계적인 마케팅 운영으로 안정적인 환자 유입이 가능한 상태입니다. 현재 강점을 유지하면서 세부적인 최적화에 집중하세요.";
+  } else if (totalScore >= 50) {
+    interpretation = "기본적인 마케팅 체계는 갖추었으나, 채널 다양화와 성과 측정 강화가 필요합니다. 단계적 개선으로 안정성을 높일 수 있습니다.";
+  } else if (totalScore >= 30) {
+    interpretation = "마케팅의 기초는 있지만 체계적인 운영이 부족합니다. 우선순위를 정해 핵심 영역부터 개선하면 빠른 성과를 기대할 수 있습니다.";
+  } else {
+    interpretation = "마케팅 인프라가 미흡한 상태입니다. 즉시 실행 가능한 항목부터 시작하여 단계적으로 체계를 구축해야 합니다.";
+  }
+
+  // 상위 3개 요인만 반환
+  return {
+    primaryFactors: primaryFactors.slice(0, 3),
+    interpretation,
+  };
 }
