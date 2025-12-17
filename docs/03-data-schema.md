@@ -980,6 +980,98 @@ export interface QuestionField {
 
 ---
 
+### 4.3 Results 관련 타입
+
+```typescript
+// src/lib/solutions/checklistGenerator.ts
+export interface ChecklistItem {
+  id: string;
+  category: "channel" | "operation" | "measurement" | "budget" | "integrated";
+  title: string;
+  priority: "시급" | "개선권장" | "기회" | "유지";
+  checked: boolean;
+  tip: string;
+}
+```
+
+**설명**:
+- `id`: 체크리스트 항목 고유 ID (예: "channel-1")
+- `category`: 5개 카테고리 분류
+- `title`: 체크리스트 항목 제목
+- `priority`: 4단계 우선순위 (시급 > 개선권장 > 기회 > 유지)
+- `checked`: 이미 잘하고 있는지 여부
+- `tip`: 상세 조언 (💡 팁 형태)
+
+**사용 예시**:
+```typescript
+const checklistItem: ChecklistItem = {
+  id: "integrated-1",
+  category: "integrated",
+  title: "검색 노출 최적화 긴급 대응",
+  priority: "시급",
+  checked: false,
+  tip: "⚠️ 경쟁이 치열한 지역인데 노출 순위가 낮습니다..."
+};
+```
+
+---
+
+```typescript
+// src/lib/scoring/competitionScore.ts
+export interface CompetitionAssessment {
+  competitionLevel: {
+    level: "낮음" | "보통" | "높음" | "매우 높음";
+    description: string;
+    color: "green" | "yellow" | "orange" | "red";
+  };
+  searchRanking: {
+    rank: "최상위" | "양호" | "개선필요" | "시급";
+    description: string;
+    color: "green" | "blue" | "orange" | "red";
+  };
+  actionPriority: "시급" | "개선권장" | "기회" | "유지";
+  priorityReason: string;
+  contextualAdvice: string[];
+}
+```
+
+**설명**:
+- `competitionLevel`: 경쟁 환경 평가 (Q13 기반)
+  - `level`: 4단계 경쟁도
+  - `description`: 경쟁 환경 설명
+  - `color`: UI 색상 (낮음=green, 높음=red)
+- `searchRanking`: 검색 노출 순위 평가 (Q14 기반)
+  - `rank`: 4단계 노출 순위
+  - `description`: 순위 설명
+  - `color`: UI 색상
+- `actionPriority`: 경쟁도 × 순위 조합으로 결정되는 우선순위
+- `priorityReason`: 우선순위 선정 이유
+- `contextualAdvice`: 업종×지역×상황별 맞춤 조언 배열 (최대 10개)
+
+**사용 예시**:
+```typescript
+const assessment: CompetitionAssessment = {
+  competitionLevel: {
+    level: "매우 높음",
+    description: "매우 치열한 경쟁 환경입니다...",
+    color: "red"
+  },
+  searchRanking: {
+    rank: "시급",
+    description: "매우 낮은 노출 순위입니다...",
+    color: "red"
+  },
+  actionPriority: "시급",
+  priorityReason: "경쟁이 치열한 지역인데 노출 순위가 낮아 즉시 조치가 필요합니다",
+  contextualAdvice: [
+    "💡 강남/광역시 미용 시장은 초경쟁 지역입니다...",
+    "🎯 강남언니, 모두닥 등 플랫폼에서 테스트를 시작하세요..."
+  ]
+};
+```
+
+---
+
 ## 5. 마이그레이션 순서
 
 1. **surveys 테이블 생성**

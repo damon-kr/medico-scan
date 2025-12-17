@@ -244,18 +244,231 @@ graph TB
 
 **목적**: 진단 결과 표시 및 전환 유도
 
-**주요 섹션**:
-- **Score Card**: 총점 및 레벨 표시 (게이지 차트)
-- **Diagnosis Card**: 주요 문제 유형 + 부가 문제
-- **Best Case Comparison**: 성공 사례 비교 + 격차 분석
-- **Solutions Card**: 맞춤형 개선안 (즉시/단기/중장기)
-- **CTA Section**: 상담 신청 / 리포트 다운로드
-
 **데이터 흐름**:
 1. URL에서 `survey_id` 추출
 2. Supabase에서 `survey_results` 조회
-3. 결과 데이터 렌더링
-4. 전환 액션 처리
+3. 4개 엔진으로 결과 생성:
+   - `calculateTotalScore()` → 점수 계산
+   - `diagnoseSurvey()` → 진단 수행
+   - `generateSolutions()` → 솔루션 생성
+   - `simulateROI()` → ROI 예측
+4. 6개 섹션 렌더링
+5. 전환 액션 처리
+
+---
+
+#### 결과 페이지 6개 섹션 구조
+
+##### 섹션 1: 종합 점수 카드 (Score Card)
+
+**파일**: `Results.tsx` (L163-197)
+
+**표시 내용**:
+- **총점**: 0-100점 (원형 게이지 차트)
+- **레벨**: 4단계 (초기/기본/중급/고급)
+- **4개 카테고리 점수**:
+  - 채널 활용도 (30점)
+  - 운영 관리 (25점)
+  - 성과 측정 (25점)
+  - 예산 규모 (20점)
+- **업종 평균 대비**: 상대 평가 점수
+
+**동적 요소**:
+- 점수에 따라 레벨 색상 변경
+- 카테고리별 막대 차트 길이
+- 업종 평균선 위치
+
+**엔진**: `scoreCalculator.ts`
+
+---
+
+##### 섹션 2: 진단 결과 카드 (Diagnosis Card)
+
+**파일**: `Results.tsx` (L199-263)
+
+**표시 내용**:
+- **주요 진단 유형** (Primary Issue):
+  - 12가지 진단 유형 중 1개
+  - 진단 제목 + 아이콘
+  - 진단 설명 (1-2문장)
+- **점수 산출 근거** (Score Summary):
+  - primaryFactors (3개 요인)
+  - interpretation (점수 해석)
+- **강점 영역** (Strengths):
+  - 잘하고 있는 영역 (최대 5개)
+  - 각 강점별 설명
+
+**동적 요소**:
+- 12가지 진단 유형별 다른 제목/설명/아이콘
+- 점수에 따라 다른 해석 메시지
+- 강점 영역 개수 및 내용 변경
+
+**엔진**: `diagnosisEngine.ts`, `issueDetectors.ts`
+
+---
+
+##### 섹션 3: 경쟁 환경 및 노출 순위 분석
+
+**파일**: `CompetitionSection.tsx`
+
+**표시 내용**:
+- **경쟁 현황** (Competition Level):
+  - 경쟁도: 낮음/보통/높음/매우 높음
+  - 인근 경쟁 병원 수 (Q13 응답)
+  - 경쟁 환경 설명 (3-4줄)
+  - 색상 인디케이터 (green/yellow/orange/red)
+- **노출 순위** (Search Ranking):
+  - 네이버 지도 순위 (Q14 응답)
+  - 순위 상태: 최상위/양호/개선필요/시급
+  - 순위 설명 (3-4줄)
+  - 색상 인디케이터
+- **종합 우선순위** (Action Priority):
+  - 경쟁도 × 순위 조합 판단
+  - 우선순위: 시급/개선권장/기회/유지
+  - 우선순위 이유 (2-3줄)
+
+**동적 요소**:
+- 4×5 = 20가지 조합별 다른 메시지
+- 색상 및 아이콘 변경
+- 우선순위 레벨에 따른 강조 스타일
+
+**엔진**: `competitionScore.ts` (L143-282)
+
+---
+
+##### 섹션 4: 우리 병원 맞춤 전략 (Contextual Advice)
+
+**파일**: `CompetitionSection.tsx` (L156-170)
+
+**표시 내용**:
+- **업종×지역×상황별 맞춤 조언**:
+  - 최대 10개 조언 리스트
+  - 각 조언: 아이콘 + 텍스트 (3-5줄)
+  - 순서: 중요도 순
+
+**동적 요소**:
+- **10개 업종별** 다른 조언:
+  - 피부과/성형외과
+  - 치과
+  - 정형외과
+  - 내과/가정의학과
+  - 산부인과/소아청소년과
+  - 안과/이비인후과
+  - 비뇨기과
+  - 정신건강의학과/신경과
+  - 기타
+- **지역별** 다른 조언:
+  - 강남/서초/역삼 (초경쟁 지역)
+  - 광역시 중심가
+  - 일반 지역
+- **상황별** 다른 조언:
+  - 경쟁도 (낮음/보통/높음/매우 높음)
+  - 검색 순위 (최상위/양호/개선필요/시급)
+  - 플랫폼 사용 여부
+  - 채널 개수
+
+**조언 조합**: 10개 업종 × 3개 지역 × 다양한 상황 = **100개 이상 조합**
+
+**엔진**: `competitionScore.ts`의 `generateContextualAdvice()` (L289-515)
+
+---
+
+##### 섹션 5: 실행 체크리스트 (Checklist)
+
+**파일**: `ChecklistSection.tsx`
+
+**표시 내용**:
+- **39개 조건 중 매칭되는 항목만 표시**:
+  - 카테고리별 그룹핑:
+    - 채널 (최대 12개)
+    - 운영 (최대 10개)
+    - 측정 (최대 9개)
+    - 예산 (최대 4개)
+    - 통합 (최대 4개)
+  - 각 항목:
+    - ✓ 체크박스 (이미 잘하고 있으면 체크됨)
+    - 제목
+    - 💡 팁 (상세 조언)
+    - 우선순위 배지 (시급/개선권장/기회/유지)
+- **우선순위 정렬**: 시급 → 개선권장 → 기회 → 유지
+
+**동적 요소**:
+- 설문 응답 조합에 따라 표시되는 항목 변경
+- 우선순위 색상 (시급=red, 개선권장=orange, 기회=blue, 유지=green)
+- 체크 여부
+
+**엔진**: `checklistGenerator.ts` (39개 조건 평가)
+
+---
+
+##### 섹션 6: 맞춤형 개선 전략 (Solutions)
+
+**파일**: `Results.tsx` (L273-350)
+
+**표시 내용**:
+- **3단계 솔루션**:
+  1. **즉시 실행** (72시간 내, high priority):
+     - 최대 3개 액션
+     - 각 액션: 제목, 설명, 기간, 예상 효과
+  2. **단기 개선안** (1개월 내, medium priority):
+     - 최대 3개 액션
+  3. **중장기 전략** (3-6개월, low priority):
+     - 최대 2개 액션
+
+**동적 요소**:
+- **12가지 진단 유형별** 다른 솔루션:
+  - 각 유형마다 특화된 3단계 액션
+- **업종별** 미세 조정:
+  - 예: 피부과 → "인스타그램 마케팅" 강조
+  - 예: 치과 → "네이버 플레이스 리뷰" 강조
+- **예산별** 액션 조정:
+  - 예산 높음 → 광고 확대 액션
+  - 예산 낮음 → 무료 채널 활용 액션
+
+**엔진**: `actionGenerator.ts`, `actionTemplates.ts` (12개 유형 × 3단계)
+
+---
+
+#### 결과 페이지 데이터 플로우
+
+```mermaid
+graph LR
+    A[SurveyResponse] --> B[scoreCalculator]
+    B --> C[ScoreResult]
+    A --> D[diagnosisEngine]
+    C --> D
+    D --> E[DiagnosisResult]
+    A --> F[actionGenerator]
+    E --> F
+    F --> G[Solutions]
+    A --> H[roiSimulator]
+    C --> H
+    H --> I[ROIProjection]
+    A --> J[competitionScore]
+    J --> K[CompetitionAssessment]
+    A --> L[checklistGenerator]
+    L --> M[ChecklistItem[]]
+
+    C --> N[섹션 1: 점수 카드]
+    E --> O[섹션 2: 진단 카드]
+    K --> P[섹션 3: 경쟁 환경]
+    K --> Q[섹션 4: 맞춤 전략]
+    M --> R[섹션 5: 체크리스트]
+    G --> S[섹션 6: 솔루션]
+```
+
+---
+
+#### 섹션별 파일 위치
+
+| 섹션 | 렌더링 파일 | 로직 엔진 | 라인 |
+|------|-----------|----------|------|
+| 1. 점수 카드 | Results.tsx | scoreCalculator.ts | L163-197 |
+| 2. 진단 카드 | Results.tsx | diagnosisEngine.ts | L199-263 |
+| 3. 경쟁 환경 | CompetitionSection.tsx | competitionScore.ts | 전체 |
+| 4. 맞춤 전략 | CompetitionSection.tsx | competitionScore.ts | L156-170 |
+| 5. 체크리스트 | ChecklistSection.tsx | checklistGenerator.ts | 전체 |
+| 6. 솔루션 | Results.tsx | actionGenerator.ts | L273-350 |
 
 ---
 

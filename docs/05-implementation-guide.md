@@ -305,28 +305,14 @@ src/
 
 ### 4.3 데이터 관리
 
+상태 관리 전략의 상세 내용은 [01-architecture.md 섹션 9](./01-architecture.md#9-상태-관리-전략)를 참조하세요.
+
+**요약**:
+- **서버 상태**: React Query (캐싱, 자동 갱신)
+- **로컬 UI 상태**: useState/useReducer
+- **폼 상태**: React Hook Form (검증, 에러 처리)
+
 **원칙**: 적절한 상태 관리 도구 선택
-
-**서버 상태**: React Query
-```typescript
-const { data, isLoading } = useQuery({
-  queryKey: ['survey-result', surveyId],
-  queryFn: () => getSurveyResult(surveyId),
-});
-```
-
-**로컬 상태**: useState/useReducer
-```typescript
-const [currentQuestion, setCurrentQuestion] = useState(0);
-const [responses, setResponses] = useState<SurveyResponse>({});
-```
-
-**폼 상태**: React Hook Form
-```typescript
-const { register, handleSubmit, formState: { errors } } = useForm({
-  resolver: zodResolver(emailSchema),
-});
-```
 
 ---
 

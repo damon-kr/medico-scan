@@ -716,12 +716,12 @@ function calculateOpportunityCost(
 ): OpportunityCost {
   const currentPatients = estimateMonthlyPatients(currentScore);
   const bestCasePatients = estimateMonthlyPatients(bestCaseScore);
-  
+
   const performanceGap = (bestCasePatients - currentPatients) / currentPatients;
-  
+
   const monthlyLoss = currentPatients * performanceGap * avgPatientValue;
   const annualLoss = monthlyLoss * 12;
-  
+
   return {
     monthly: Math.round(monthlyLoss),
     annual: Math.round(annualLoss),
@@ -729,6 +729,227 @@ function calculateOpportunityCost(
   };
 }
 ```
+
+### 7.3 실제 구현 (roiSimulator.ts)
+
+**파일**: `src/lib/roi/roiSimulator.ts`
+
+#### 7.3.1 CPA (Cost Per Acquisition) 계산
+
+```typescript
+// 현재 CPA 추정
+function estimateCurrentCPA(totalScore: number, responses: SurveyResponse): number {
+  const baseCPA = 50000; // 기준 CPA: 5만원
+
+  // 점수가 낮을수록 CPA 높음
+  const scoreMultiplier = totalScore <= 25 ? 2.0 :
+                         totalScore <= 50 ? 1.5 :
+                         totalScore <= 75 ? 1.2 : 1.0;
+
+  // 채널 수가 적을수록 CPA 높음
+  const channelCount = responses.channels?.length || 1;
+  const channelMultiplier = channelCount === 1 ? 1.5 :
+                           channelCount === 2 ? 1.2 : 1.0;
+
+  // 성과 측정 안 하면 CPA 높음
+  const trackingMultiplier =
+    responses.trackingMethods?.includes("성과 측정 안 함") ? 1.3 : 1.0;
+
+  return Math.round(baseCPA * scoreMultiplier * channelMultiplier * trackingMultiplier);
+}
+```
+
+**CPA 계산 로직**:
+1. **기준 CPA**: 5만원 (일반적인 병원 마케팅 CPA)
+2. **점수 보정**:
+   - 0-25점: 2.0배 (CPA 10만원)
+   - 26-50점: 1.5배 (CPA 7.5만원)
+   - 51-75점: 1.2배 (CPA 6만원)
+   - 76-100점: 1.0배 (CPA 5만원)
+3. **채널 수 보정**:
+   - 1개 채널: 1.5배 (단일 채널 의존 리스크)
+   - 2개 채널: 1.2배
+   - 3개 이상: 1.0배
+4. **성과 측정 보정**:
+   - 측정 안 함: 1.3배 (비효율 가능성)
+   - 측정함: 1.0배
+
+**예시**:
+- 점수 30점, 채널 1개, 측정 안 함 → CPA = 50,000 × 1.5 × 1.5 × 1.3 = **146,250원**
+- 점수 80점, 채널 5개, 측정함 → CPA = 50,000 × 1.0 × 1.0 × 1.0 = **50,000원**
+
+---
+
+#### 7.3.2 개선 후 CPA 예측
+
+```typescript
+function projectImprovedCPA(
+  currentCPA: number,
+  currentScore: number,
+  timeframe: "3months" | "6months"
+): number {
+  // 현재 점수가 낮을수록 개선 여지 큼
+  const improvementPotential =
+    currentScore <= 25 ? 0.40 : // 40% 개선 가능
+    currentScore <= 50 ? 0.30 : // 30% 개선 가능
+    currentScore <= 75 ? 0.20 : // 20% 개선 가능
+    0.10; // 10% 개선 가능
+
+  // 시간에 따른 개선율
+  const timeMultiplier = timeframe === "3months" ? 0.5 : 1.0; // 3개월은 50%, 6개월은 100%
+
+  const actualImprovement = improvementPotential * timeMultiplier;
+
+  return Math.round(currentCPA * (1 - actualImprovement));
+}
+```
+
+**개선 예측 로직**:
+- **개선 잠재력**: 현재 점수가 낮을수록 개선 여지 큼
+  - 0-25점: 최대 40% CPA 감소
+  - 26-50점: 최대 30% CPA 감소
+  - 51-75점: 최대 20% CPA 감소
+  - 76-100점: 최대 10% CPA 감소
+- **시간 반영**:
+  - 3개월: 잠재력의 50% 달성
+  - 6개월: 잠재력의 100% 달성
+
+**예시**:
+- 현재 CPA 100,000원, 점수 30점:
+  - 3개월 후: 100,000 × (1 - 0.40 × 0.5) = **80,000원** (20% 감소)
+  - 6개월 후: 100,000 × (1 - 0.40 × 1.0) = **60,000원** (40% 감소)
+
+---
+
+#### 7.3.3 환자 수 예측
+
+```typescript
+function projectPatientCount(
+  currentScore: number,
+  timeframe: "3months" | "6months"
+): number {
+  // 기준 환자 수 (점수별)
+  const basePatients =
+    currentScore <= 25 ? 50 :
+    currentScore <= 50 ? 100 :
+    currentScore <= 75 ? 200 : 300;
+
+  // 개선 후 증가율
+  const growthRate = timeframe === "3months" ? 1.3 : 1.6; // 30% / 60% 증가
+
+  return Math.round(basePatients * growthRate);
+}
+```
+
+---
+
+#### 7.3.4 ROI 비율 계산
+
+```typescript
+function calculateROI(
+  currentCPA: number,
+  improvedCPA: number,
+  currentPatients: number,
+  improvedPatients: number,
+  budget: number
+): {
+  currentROI: number;
+  improvedROI: number;
+  roiIncrease: number;
+} {
+  // 환자 1명당 평균 매출 (가정: 20만원)
+  const avgRevenue = 200000;
+
+  // 현재 ROI
+  const currentRevenue = currentPatients * avgRevenue;
+  const currentCost = currentPatients * currentCPA;
+  const currentROI = ((currentRevenue - currentCost) / currentCost) * 100;
+
+  // 개선 후 ROI
+  const improvedRevenue = improvedPatients * avgRevenue;
+  const improvedCost = improvedPatients * improvedCPA;
+  const improvedROI = ((improvedRevenue - improvedCost) / improvedCost) * 100;
+
+  return {
+    currentROI: Math.round(currentROI),
+    improvedROI: Math.round(improvedROI),
+    roiIncrease: Math.round(improvedROI - currentROI),
+  };
+}
+```
+
+**ROI 계산 공식**:
+```
+ROI (%) = (매출 - 비용) / 비용 × 100
+매출 = 환자 수 × 평균 진료비 (20만원)
+비용 = 환자 수 × CPA
+```
+
+**예시**:
+- **현재**: 환자 50명, CPA 100,000원
+  - 매출: 50 × 200,000 = 10,000,000원
+  - 비용: 50 × 100,000 = 5,000,000원
+  - ROI: (10,000,000 - 5,000,000) / 5,000,000 × 100 = **100%**
+- **6개월 후**: 환자 80명, CPA 60,000원
+  - 매출: 80 × 200,000 = 16,000,000원
+  - 비용: 80 × 60,000 = 4,800,000원
+  - ROI: (16,000,000 - 4,800,000) / 4,800,000 × 100 = **233%**
+  - **ROI 증가: +133%p**
+
+---
+
+#### 7.3.5 최종 ROIProjection 타입
+
+```typescript
+export interface ROIProjection {
+  current: {
+    monthly_patients: number;
+    cpa: number;
+    monthly_revenue: number;
+    monthly_cost: number;
+    roi: number;
+  };
+  month_3: {
+    monthly_patients: number;
+    cpa: number;
+    monthly_revenue: number;
+    monthly_cost: number;
+    roi: number;
+    improvement: {
+      patients_increase: number;
+      cpa_decrease: number;
+      roi_increase: number;
+    };
+  };
+  month_6: {
+    monthly_patients: number;
+    cpa: number;
+    monthly_revenue: number;
+    monthly_cost: number;
+    roi: number;
+    improvement: {
+      patients_increase: number;
+      cpa_decrease: number;
+      roi_increase: number;
+    };
+  };
+}
+```
+
+---
+
+### 7.4 ROI 시뮬레이션 활용
+
+**결과 페이지에서 표시**:
+- 현재 vs 3개월 후 vs 6개월 후 비교 테이블
+- CPA 감소 그래프
+- 환자 수 증가 그래프
+- ROI 개선 하이라이트
+
+**비즈니스 가치**:
+- 구체적인 숫자로 개선 효과 전달
+- 마케팅 투자 정당화
+- 상담 전환율 향상
 
 ---
 
@@ -790,10 +1011,24 @@ updateFrequency in ["월 1회 이하", "거의 안함"]
 
 **핵심 메시지**: "영상 콘텐츠로 전문성과 신뢰를 보여주세요"
 
+**위험 요인**:
+- 환자들이 온라인에서 정보를 찾지 못함
+- 경쟁 병원 대비 신뢰 구축 부족
+- 브랜딩 기회 상실
+
 **솔루션**:
-1. 유튜브 쇼츠/인스타그램 릴스부터 시작
-2. 진료 사례, 시술 과정 소개
-3. 의료진 소개 및 전문성 어필
+1. **즉시 실행 (72시간)**:
+   - 인스타그램/유튜브 비즈니스 계정 개설
+   - 의료진 소개 릴스/쇼츠 1개 제작 (30초)
+   - 기본 프로필 설정 (소개, 연락처, 위치)
+2. **단기 개선안 (1개월)**:
+   - 진료 사례/시술 과정 영상 주 1-2회 업로드
+   - 환자 후기 인터뷰 영상 촬영
+   - 자주 묻는 질문 Q&A 시리즈 시작
+3. **중장기 전략 (3-6개월)**:
+   - 전문성 콘텐츠 시리즈 기획 (20-30개 주제)
+   - 유튜브 구독자 1,000명 목표
+   - 콘텐츠를 활용한 검색광고 연동
 
 ---
 
@@ -811,11 +1046,25 @@ targetSpecialties.includes(specialty) &&
 
 **핵심 메시지**: "1페이지 진입은 쉽지 않지만, 목표로 삼고 체계적인 SEO 전략을 수립하세요"
 
+**위험 요인**:
+- 경쟁 병원에 환자 유입이 편중됨
+- 온라인에서 발견되지 않아 신규 환자 감소
+- 검색광고 의존도 심화 (비용 증가)
+
 **솔루션**:
-1. 네이버 플레이스 정보 완벽 작성 (사진 30장 이상)
-2. 블로그 키워드 전략 수립
-3. 리뷰 관리 및 응답
-4. 네이버 예약 시스템 활용
+1. **즉시 실행 (72시간)**:
+   - 네이버 플레이스 정보 완벽 작성 (사진 30장 이상)
+   - 병원 소개, 진료 시간, 주차 정보 상세 등록
+   - 리뷰 응답 시작 (모든 리뷰에 24시간 내 답변)
+2. **단기 개선안 (1개월)**:
+   - 블로그 키워드 전략 수립 ("지역명 + 진료과" 20개)
+   - 주 2-3회 블로그 포스팅 (진료 정보, FAQ)
+   - 네이버 예약 시스템 활용 (예약 편의성 제고)
+   - 리뷰 10개 이상 확보 (기존 환자 대상 요청)
+3. **중장기 전략 (3-6개월)**:
+   - 네이버 지도 1페이지 진입 목표
+   - SEO 점수 80점 이상 달성
+   - 유기적 유입 30% 이상 확보
 
 ---
 
@@ -833,10 +1082,25 @@ commercialPlatform === "관심 없음"
 
 **핵심 메시지**: "미용 플랫폼 테스트로 신규 고객을 확보하세요"
 
+**위험 요인**:
+- 플랫폼 경쟁 병원에 환자 유입 집중
+- 신규 고객 확보 기회 상실
+- 브랜드 인지도 약화
+
 **솔루션**:
-1. 강남언니/모두닥 무료 등록
-2. 소액 테스트 광고 (월 50만원)
-3. ROI 검증 후 확대
+1. **즉시 실행 (72시간)**:
+   - 강남언니, 모두닥 무료 병원 등록
+   - 기본 정보, 진료 항목, 가격 정보 입력
+   - 시술 전후 사진 10장 이상 등록
+2. **단기 개선안 (1개월)**:
+   - 플랫폼별 소액 광고 테스트 (월 50만원씩)
+   - 이벤트 진행 (신규 고객 할인 10-20%)
+   - 후기 10개 이상 확보 (기존 환자 대상)
+   - 플랫폼 CPA 측정 및 분석
+3. **중장기 전략 (3-6개월)**:
+   - ROI 검증 후 플랫폼 광고 월 200-300만원 확대
+   - 플랫폼 내 랭킹 상위 10위권 진입
+   - 플랫폼 유입 환자 재방문율 70% 이상 목표
 
 ---
 
@@ -854,16 +1118,30 @@ commercialPlatform === "관심 없음"
 
 **핵심 메시지**: "동네 환자를 잡으려면 지도 검색부터 잡으세요"
 
+**위험 요인**:
+- 반경 500m~1km 내 환자 유입 기회 상실
+- 지도 검색 시 경쟁 병원 노출
+- 워크인(walk-in) 환자 감소
+
 **동적 코멘트**:
 - 검색광고 미사용/비중 낮음 → "네이버/카카오 검색광고로 지역 내 노출 강화"
 - 네이버 예약 미사용 → "네이버 예약으로 전환율 향상"
 - 카카오맵 미사용 → "카카오맵/카카오톡 예약 활용"
 
 **솔루션**:
-1. 구글 비즈니스 프로필(GBP) + 네이버 플레이스 등록
-2. 지역명 + 진료과 키워드 최적화
-3. 네이버/카카오 검색광고 (지역 타겟팅)
-4. 예약 시스템 연동
+1. **즉시 실행 (72시간)**:
+   - 구글 비즈니스 프로필(GBP) 등록
+   - 네이버 플레이스 최적화 (사진 20장, 상세 정보)
+   - 카카오맵 등록 및 정보 입력
+2. **단기 개선안 (1개월)**:
+   - 지역명 + 진료과 키워드 최적화 (예: "강남역 내과", "분당 치과")
+   - 네이버/카카오 검색광고 (지역 타겟팅, 월 100만원)
+   - 네이버/카카오톡 예약 시스템 연동
+   - 지역 커뮤니티 후기 관리 (맘카페, 네이버 카페)
+3. **중장기 전략 (3-6개월)**:
+   - 지도 검색 1페이지 진입
+   - 지역 내 Top 3 병원 브랜딩
+   - 예약 전환율 30% 이상 달성
 
 ---
 
@@ -880,11 +1158,25 @@ budget in ["500-1,000만원", "1,000-2,000만원", "2,000만원 이상"] &&
 
 **핵심 메시지**: "예산을 쓰는 만큼 성과를 측정하고 분산하세요"
 
+**위험 요인**:
+- 효과 없는 채널에 예산 낭비 (월 수백만원 손실 가능)
+- 성과 측정 부재로 최적화 불가
+- 단일 채널 의존으로 리스크 증가
+
 **솔루션**:
-1. 채널별 UTM 파라미터 설정
-2. 전화번호 분리 (채널별 070 번호)
-3. 광고비 대비 신규 환자 수 측정
-4. 채널 분산: 주력 50% + 테스트 30% + 예비 20%
+1. **즉시 실행 (72시간)**:
+   - 채널별 UTM 파라미터 설정 (GA4 연동)
+   - 전화번호 분리 (채널별 070 번호 발급)
+   - 스프레드시트로 일간 채널별 신규 환자 수 집계 시작
+2. **단기 개선안 (1개월)**:
+   - 광고비 대비 신규 환자 수 측정 (CPA 계산)
+   - 채널 분산 전략 수립: 주력 50% + 테스트 30% + 예비 20%
+   - 비효율 채널 (CPA 20만원 이상) 예산 50% 축소
+   - 효율 채널 (CPA 5만원 이하) 예산 50% 증액
+3. **중장기 전략 (3-6개월)**:
+   - 통합 대시보드 구축 (GA4 + 엑셀 or 루커 스튜디오)
+   - 전체 CPA 10만원 이하 목표
+   - 채널 포트폴리오 5개 이상 운영
 
 ---
 
@@ -1074,6 +1366,142 @@ function generateContextualAdvice(responses: SurveyResponse): string[] {
   return advice;
 }
 ```
+
+---
+
+#### 10.3.1 generateContextualAdvice 함수 전체 구조
+
+**파일**: `src/lib/scoring/competitionScore.ts` (L289-515, 총 227줄)
+
+**함수 시그니처**:
+```typescript
+export function generateContextualAdvice(
+  responses: SurveyResponse,
+  competitionAssessment?: CompetitionAssessment
+): string[]
+```
+
+**전체 로직 흐름**:
+
+```mermaid
+graph TD
+    A[generateContextualAdvice 시작] --> B[기본 정보 추출]
+    B --> C{primarySpecialty 판단}
+    C --> D1[피부과/성형외과]
+    C --> D2[내과/가정의학과]
+    C --> D3[소아과]
+    C --> D4[비뇨기과]
+    C --> D5[치과]
+    C --> D6[정형외과]
+    C --> D7[한의원]
+    C --> D8[안과/이비인후과]
+    C --> D9[정신과]
+    C --> D10[기타]
+
+    D1 --> E1{location 판단}
+    E1 -->|강남/광역시| F1[초경쟁 지역 조언]
+    E1 -->|일반 지역| F2[지역 기반 조언]
+    F1 --> G1{commercialPlatform 확인}
+    G1 -->|미사용| H1[플랫폼 도입 권장]
+
+    D2 --> E2[거리 민감도 높음 조언]
+    E2 --> G2{location 확인}
+    G2 -->|비강남| H2[네이버 플레이스 중요 강조]
+
+    D3 --> E3[입소문 중요성 조언]
+    E3 --> G3{competition_count}
+    G3 -->|매우 많음| H3[과도한 투자 지양]
+
+    D4 --> E4[프라이버시 신뢰 조언]
+    E4 --> G4{유튜브 활용 확인}
+    G4 -->|미사용| H4[유튜브 권장]
+
+    H1 --> I[조언 배열 생성]
+    H2 --> I
+    H3 --> I
+    H4 --> I
+    I --> J[최대 10개 조언 반환]
+```
+
+**로직 구성 요소**:
+
+1. **기본 정보 추출** (L291-300):
+   ```typescript
+   const primarySpecialty = responses.specialties?.selected[0];
+   const location = responses.location_and_size?.location || '';
+   const isGangnam = location.includes('강남') || location.includes('서초') || location.includes('역삼');
+   const isMetro = location.includes('광역시');
+   const channels = responses.channels?.selected || [];
+   const competition = responses.competition_count;
+   const ranking = responses.naver_map_ranking;
+   const commercialPlatform = responses.commercialPlatform;
+   ```
+
+2. **업종별 조건 분기** (10개 업종, L305-490):
+   - 각 업종마다 50-70줄의 조건 분기 로직
+   - 업종 특성 기반 필수 조언 (1-2개)
+   - 지역 조건 추가 조언 (0-1개)
+   - 채널 미활용 지적 (0-3개)
+   - 경쟁 환경 조언 (0-1개)
+   - 검색 순위 조언 (0-1개)
+
+3. **공통 조건 처리** (L492-510):
+   ```typescript
+   // 모든 업종 공통: 경쟁 치열 + 순위 낮음
+   if (competition === "많음" || competition === "매우 많음") {
+     if (ranking === "2페이지" || ranking === "3페이지 이후") {
+       advice.push("⚠️ 경쟁이 치열한 지역에서 노출 순위가 낮습니다...");
+     }
+   }
+
+   // 채널 수 부족
+   if (channels.length <= 2) {
+     advice.push("💡 최소 3-4개 채널을 운영하여 리스크를 분산하세요.");
+   }
+   ```
+
+4. **조언 정렬 및 제한** (L512-514):
+   ```typescript
+   return advice.slice(0, 10); // 최대 10개
+   ```
+
+**조언 생성 우선순위**:
+1. 업종 핵심 특성 (필수, 1개)
+2. 지역 특성 (locationRelevance가 true인 경우, 0-1개)
+3. 경쟁 환경 (0-1개)
+4. 채널 미활용 (0-3개)
+5. 검색 순위 (0-1개)
+6. 공통 개선 사항 (0-2개)
+
+**업종별 코드 크기**:
+- 피부과/성형외과: 약 70줄 (가장 복잡)
+- 내과/가정의학과: 약 50줄
+- 소아과: 약 40줄
+- 비뇨기과: 약 45줄
+- 치과: 약 50줄
+- 정형외과: 약 35줄
+- 한의원: 약 30줄
+- 안과/이비인후과: 약 40줄
+- 정신과: 약 35줄
+- 기타: 약 20줄
+
+**조언 예시 개수**:
+- 피부과/성형외과 (강남): 5-7개 조언
+- 내과/가정의학과: 3-5개 조언
+- 소아과: 2-4개 조언
+- 비뇨기과: 3-5개 조언
+
+**함수 복잡도**:
+- Cyclomatic Complexity: 약 40-50
+- 총 라인 수: 227줄
+- 조건 분기: 100개 이상
+
+**최적화 고려사항**:
+- 업종별로 별도 함수로 분리 가능 (예: `generateBeautyAdvice`, `generateInternalMedicineAdvice`)
+- 조언 템플릿을 JSON으로 외부화 가능
+- 우선순위 로직을 별도 함수로 분리 가능
+
+---
 
 ### 10.4 주요 업종별 맥락적 조언 예시
 
